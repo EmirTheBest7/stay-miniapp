@@ -5,6 +5,7 @@ import { fromTelegram, type Lang } from './i18n';
 import { EMPTY_FILTERS, type Filters } from './data/types';
 import { bindBack, inTelegram, parseStart, startParam, webApp } from './tg';
 import { loadFromCloud, loadLists, persist } from './wishlists';
+import { setHeader } from './theme';
 import { Home } from './screens/Home';
 import { Detail } from './screens/Detail';
 import { Favs, Messages, Profile, WishlistPage } from './screens/Lists';
@@ -69,6 +70,7 @@ export function App() {
 
   const ctx: Ctx = useMemo(() => ({ lang, setLang, lists, saved, toggleInList, createList, deleteList, filters, setFilters, open, toast, push, back, sheet, setSheet }), [lang, lists, filters, sheet, open, toast, push, back, setLang, saved, toggleInList, createList, deleteList]);
   const top = stack[stack.length - 1];
+  useEffect(() => { setHeader(!top ? (tab === 'explore' ? 'bg_color' : 'secondary_bg_color') : top.t === 'detail' ? 'bg_color' : 'secondary_bg_color'); }, [tab, top?.t]);
   const favCount = lists.reduce((n, l) => n + l.ids.length, 0);
   const pageCls = 'page' + (closing ? ' out' : '') + (top?.t === 'detail' ? ' bleed' : '');
   return (

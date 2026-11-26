@@ -28,7 +28,9 @@ h1, h2, h3, h4, h5, p { margin: 0; }
 .center { text-align: center; padding: 16px; }
 .ok { color: var(--tg-accent); display: inline-flex; align-items: center; gap: 4px; font-size: 14px; }
 
-.app { position: fixed; top: 0; bottom: 0; left: 50%; width: min(100%, 560px); transform: translateX(-50%); display: flex; flex-direction: column; padding-top: var(--safe-top); padding-left: var(--safe-left); padding-right: var(--safe-right); background: var(--tg-secondary-bg); }
+.app { position: fixed; inset: 0; display: flex; flex-direction: column; padding-top: var(--safe-top); padding-left: var(--safe-left); padding-right: var(--safe-right); background: var(--tg-secondary-bg); }
+/* the strip under Telegram's own header/controls takes the header colour, so the two never clash (setHeader() sets --tg-header per screen) */
+.app::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: var(--safe-top); background: var(--tg-header); z-index: 30; pointer-events: none; }
 main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 main.under { visibility: hidden; }
 .scroll { scrollbar-width: none; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
@@ -243,11 +245,50 @@ main.under { visibility: hidden; }
 @media (prefers-reduced-motion: reduce) { .page, .page.out, .msheet.snapping, .fab, .sk .photo { animation: none; transition: none; } * { scroll-behavior: auto !important; } }
 
 /* ---- fake Telegram chrome (prototype only, ?fake=ios) ---- */
-.fake-tg .fake-top { position: fixed; top: 0; left: 50%; width: min(100%, 560px); transform: translateX(-50%); height: var(--safe-top); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 12px 6px; font-size: 14px; z-index: 100; pointer-events: none; color: var(--tg-text); }
+.fake-tg .fake-top { position: fixed; top: 0; left: 0; right: 0; height: var(--safe-top); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 12px 6px; font-size: 14px; z-index: 100; pointer-events: none; color: var(--tg-text); }
 .fake-tg .fake-top span { background: var(--tg-section-bg); padding: 4px 12px; border-radius: 14px; }
 .fake-tg .fake-top .fback { pointer-events: auto; cursor: pointer; display: none; } .fake-tg.has-back .fback { display: inline; } .fake-tg.has-back .fclose { display: none; }
 .fake-main[hidden], .fake-sec[hidden] { display: none; }
-.fake-main { position: fixed; left: 50%; width: min(100%, 560px); transform: translateX(-50%); bottom: 0; height: calc(52px + 34px); padding-bottom: 34px; display: grid; place-items: center; background: var(--tg-button); color: var(--tg-button-text); font-weight: 600; z-index: 95; }
+.fake-main { position: fixed; left: 0; right: 0; bottom: 0; height: calc(52px + 34px); padding-bottom: 34px; display: grid; place-items: center; background: var(--tg-button); color: var(--tg-button-text); font-weight: 600; z-index: 95; }
 .fake-main.off { opacity: .5; }
-.fake-sec { position: fixed; left: 50%; width: min(100%, 560px); transform: translateX(-50%); bottom: calc(52px + 34px); height: 48px; display: grid; place-items: center; background: var(--tg-bottom-bar); color: var(--tg-accent); font-weight: 600; z-index: 94; box-shadow: inset 0 var(--hair) 0 0 var(--tg-separator); }
+.fake-sec { position: fixed; left: 0; right: 0; bottom: calc(52px + 34px); height: 48px; display: grid; place-items: center; background: var(--tg-bottom-bar); color: var(--tg-accent); font-weight: 600; z-index: 94; box-shadow: inset 0 var(--hair) 0 0 var(--tg-separator); }
 body.has-main .app { padding-bottom: calc(52px + 34px); } body.has-sec .app { padding-bottom: calc(52px + 34px + 48px); } body.has-main .toast { bottom: calc(52px + 34px + 16px); }
+
+
+/* ===== responsive: phone -> tablet -> desktop (fullscreen on a computer) ===== */
+.top > *, .count, .rail, .pg, .wizard > *, .search > *, .dbody, .wgrid { max-width: 1240px; margin-left: auto; margin-right: auto; width: 100%; }
+.cardrow { max-width: 1240px; margin-left: auto; margin-right: auto; width: 100%; }
+.cats { max-width: 720px; margin-left: auto; margin-right: auto; }
+.top > .pill { max-width: 720px; }
+.rcard { width: clamp(164px, 19vw, 248px); }
+.wgrid { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); }
+.tabs { justify-content: center; }
+@media (min-width: 720px) {
+  .tabs button { flex: 0 0 132px; }
+  .scrim { align-items: center; }
+  .sheet { width: min(600px, 92vw); border-radius: 16px; max-height: 86vh; }
+  .sheet.tall { height: min(86vh, 860px); }
+  .sheet header { border-radius: 16px 16px 0 0; }
+  .grab { display: none; }
+  .page .wz-body, .page .s-body { max-width: 640px; margin: 0 auto; }
+  .rail-head, .rail-strip { padding-left: max(16px, calc((100% - 1240px) / 2 + 16px)); padding-right: 16px; }
+  .rail-head { padding-right: max(16px, calc((100% - 1240px) / 2 + 16px)); }
+}
+@media (min-width: 960px) {
+  /* detail: photos left (sticky), information right */
+  .detail > .scroll { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(380px, .85fr); align-items: start; gap: 0 24px; padding: 0 24px; }
+  .detail .gal { position: sticky; top: 16px; margin-top: 16px; border-radius: var(--r-photo); overflow: hidden; }
+  .detail .gal .carousel { position: absolute; inset: 0; }
+  .detail .dbody { max-width: none; }
+  .detail .dtitle { padding-left: 0; padding-right: 0; }
+  .page.bleed { padding-top: var(--safe-top); }
+  /* map: panel on the right instead of a bottom sheet */
+  .msheet { top: 0; left: auto; right: 0; bottom: 0; width: 420px; height: auto !important; border-radius: 0; box-shadow: -4px 0 20px rgb(0 0 0 / .18); }
+  .mhead { cursor: default; } .mgrab { display: none; } .mlist { overflow-y: auto !important; }
+  .mapv .fab, .mapv .zoom { right: auto; }
+  .mapv .fab { left: calc(50% - 210px); bottom: 24px !important; }
+  .mapv .fab.hide { opacity: 1; pointer-events: auto; transform: translateX(-50%); }
+  .mapv .zoom { left: 16px; bottom: 24px !important; }
+  .map-city { right: 436px; }
+  .home.mapmode .top > .pill { margin-right: 436px; }
+}

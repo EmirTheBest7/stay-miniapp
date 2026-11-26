@@ -65,3 +65,14 @@ export function watchTheme(): () => void {
   evs.forEach((e) => w.onEvent(e, applyTheme));
   return () => evs.forEach((e) => w.offEvent(e, applyTheme));
 }
+
+/**
+ * Colour of Telegram's own header and of the strip under it. It must equal the colour of the area it touches, or the two clash (black bar over a gray page).
+ * `bg_color` where our top area is a bg_color surface (home, map, detail), `secondary_bg_color` where the page starts on the grouped background.
+ */
+export function setHeader(role: 'bg_color' | 'secondary_bg_color'): void {
+  const w = webApp();
+  const root = document.documentElement;
+  root.style.setProperty('--tg-header', role === 'bg_color' ? 'var(--tg-bg)' : 'var(--tg-secondary-bg)');
+  try { w?.setHeaderColor(role); w?.setBackgroundColor(role === 'bg_color' ? 'secondary_bg_color' : 'secondary_bg_color'); } catch { /* old client */ }
+}

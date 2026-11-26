@@ -13,9 +13,9 @@ import { dispoLabel, num } from '../i18n';
 
 const MapView = lazy(() => import('./map'));
 
-/** result card = 4:3 photo + 92 px text + 12 px gap; 2 columns from 520 px wide (a tablet or desktop window) */
-const colsOf = (w: number): number => (w >= 520 ? 2 : 1);
-const rowOf = (w: number, cols: number): number => Math.round(((w - 32 - (cols - 1) * 12) / cols) * 0.75) + 92 + 12;
+/** result card = 4:3 photo + 92 px text + 12 px gap; as many 300 px columns as fit (1 on a phone, up to 4 on a desktop) */
+const colsOf = (w: number): number => Math.max(1, Math.min(4, Math.floor((Math.min(w, 1240) - 32 + 12) / (300 + 12))));
+const rowOf = (w: number, cols: number): number => Math.round(((Math.min(w, 1240) - 32 - (cols - 1) * 12) / cols) * 0.75) + 92 + 12;
 
 export function Home() {
   const { filters, setFilters, setSheet, push, lang } = useCtx();
