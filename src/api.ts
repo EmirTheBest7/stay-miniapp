@@ -5,6 +5,16 @@ export const API_BASE: string = (import.meta.env.VITE_API_BASE ?? '').replace(/\
 /** Public photo files live next to the API (<folder>/m/); override with VITE_MEDIA_BASE once they move to R2. */
 export const MEDIA_BASE: string = ((import.meta.env.VITE_MEDIA_BASE ?? API_BASE.replace(/\/api$/, '/m')).replace(/\/$/, '')) + '/';
 
+/** The public read Worker (Cloudflare D1 copy of the live listings). Empty = read through the PHP API instead. */
+export const PUBLIC_API: string = (import.meta.env.VITE_PUBLIC_API ?? '').replace(/\/$/, '');
+
+/** GET a public Worker route (no credentials, CORS allow-listed). */
+export async function publicGet<T>(path: string): Promise<T> {
+  const r = await fetch(PUBLIC_API + path);
+  if (!r.ok) throw new ApiErr(r.status, 'public');
+  return (await r.json()) as T;
+}
+
 /** Real server calls need both a configured base AND Telegram's signed initData; anything else (the browser prototype, ?fake=) runs on local demo data. */
 export const live = (): boolean => !!API_BASE && inTelegram();
 
