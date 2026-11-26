@@ -10,7 +10,7 @@
 }
 :root[data-scheme='dark'] { --map-land: #23272a; --map-water: #1d3340; --map-road: #31373b; --map-park: #243425; --shadow: 0 6px 24px rgba(0, 0, 0, .5); }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; height: 100%; background: var(--tg-bg); color: var(--tg-text); font: 15px/1.35 -apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
+html, body { margin: 0; height: 100%; background: var(--tg-secondary-bg); color: var(--tg-text); font: 15px/1.35 -apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; touch-action: manipulation; }
 input { font: inherit; color: inherit; }
 img { display: block; }
@@ -19,7 +19,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .center { text-align: center; padding: 16px; }
 .ok { color: var(--accent); display: inline-flex; align-items: center; gap: 4px; font-size: 13px; }
 
-.app { position: fixed; inset: 0; display: flex; flex-direction: column; padding-top: var(--safe-top); padding-left: var(--safe-left); padding-right: var(--safe-right); background: var(--tg-bg); }
+.app { position: fixed; top: 0; bottom: 0; left: 50%; width: min(100%, 480px); transform: translateX(-50%); display: flex; flex-direction: column; padding-top: var(--safe-top); padding-left: var(--safe-left); padding-right: var(--safe-right); background: var(--tg-bg); }
 main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 main.under { visibility: hidden; }
 .scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 16px; }
@@ -171,8 +171,9 @@ input[type='text'], .range input, .fld input { width: 100%; min-height: 44px; pa
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---- fake Telegram chrome (prototype only, ?fake=ios) ---- */
-.fake-tg .fake-top { position: fixed; top: 0; left: 0; right: 0; height: calc(var(--safe-top)); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 12px 6px; font-size: 13px; z-index: 100; pointer-events: none; color: var(--tg-text); background: var(--tg-bg); }
+.fake-tg .fake-top { position: fixed; top: 0; left: 50%; width: min(100%, 480px); transform: translateX(-50%); height: calc(var(--safe-top)); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 12px 6px; font-size: 13px; z-index: 100; pointer-events: none; color: var(--tg-text); background: var(--tg-bg); }
 .fake-tg .fake-top span { background: var(--tg-secondary-bg); padding: 4px 12px; border-radius: 14px; }
-.fake-main { position: fixed; left: 0; right: 0; bottom: 0; height: calc(56px + 34px); padding-bottom: 34px; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); font-weight: 700; z-index: 95; }
+.fake-main[hidden] { display: none; }
+.fake-main { position: fixed; left: 50%; width: min(100%, 480px); transform: translateX(-50%); bottom: 0; height: calc(56px + 34px); padding-bottom: 34px; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); font-weight: 700; z-index: 95; }
 .fake-main.off { opacity: .5; }
 body.has-main .app { padding-bottom: calc(56px + 34px); } body.has-main .toast { bottom: calc(56px + 34px + 16px); }
