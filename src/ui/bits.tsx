@@ -37,7 +37,7 @@ export function Empty({ title, sub, action, icon = 'home' }: { title: string; su
 
 export function TabBar({ tab, setTab, favCount }: { tab: string; setTab(t: string): void; favCount: number }) {
   const t = useT();
-  const items: [string, string, string][] = [['explore', 'search', 'tab.explore'], ['favs', 'heart', 'tab.favs'], ['host', 'plus', 'tab.host'], ['msgs', 'chat', 'tab.msgs'], ['me', 'user', 'tab.me']];
+  const items: [string, string, string][] = [['explore', 'search', 'tab.explore'], ['favs', 'star', 'tab.favs'], ['host', 'plus', 'tab.host'], ['msgs', 'chat', 'tab.msgs'], ['me', 'user', 'tab.me']];
   return (
     <nav class="tabs">
       {items.map(([id, ic, key]) => (
