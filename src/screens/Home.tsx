@@ -18,12 +18,13 @@ const colsOf = (w: number): number => Math.max(1, Math.min(4, Math.floor((Math.m
 const rowOf = (w: number, cols: number): number => Math.round(((Math.min(w, 1240) - 32 - (cols - 1) * 12) / cols) * 0.75) + 92 + 12;
 
 export function Home() {
-  const { filters, setFilters, setSheet, push, lang } = useCtx();
+  const { filters, setFilters, setSheet, push, lang, loaded, dataVer } = useCtx();
   const t = useT();
   const [view, setView] = useState<'list' | 'map'>('list');
-  const [loading, setLoading] = useState(true);
-  useEffect(() => { const h = setTimeout(() => setLoading(false), 350); return () => clearTimeout(h); }, []);
-  const items = useMemo(() => run(LISTINGS, filters), [filters]);
+  const [min, setMin] = useState(true);
+  useEffect(() => { const h = setTimeout(() => setMin(false), 350); return () => clearTimeout(h); }, []);
+  const loading = min || !loaded;
+  const items = useMemo(() => run(LISTINGS, filters), [filters, dataVer]);
   const n = items.length;
   const searching = activeCount(filters) > 0 || filters.kind !== 'all' || filters.city !== 'all';
   const cats: [string, 'all' | 'room' | 'flat' | 'house', string][] = [['chip.all', 'all', 'grid'], ['chip.room', 'room', 'bed'], ['chip.flat', 'flat', 'building'], ['chip.house', 'house', 'home']];
@@ -44,7 +45,7 @@ export function Home() {
       by({ city: 'prague' }, t('city.prague')), by({ city: 'brno' }, t('city.brno')), by({ city: 'ostrava' }, t('city.ostrava')),
       by({ advertiser: 'private' }, t('f.adv.private')), by({ pets: true }, t('f.pets')), by({ rentMax: 15000 }, t('s.upto', { n: num(15000) })),
     ].filter((r) => r.items.length > 0);
-  }, [filters.kind, lang]);
+  }, [filters.kind, lang, dataVer]);
 
   const menu = (
     <div class="cats" role="tablist">
@@ -56,7 +57,7 @@ export function Home() {
     </div>
   );
   const count = (
-    <div class="count hint"><span>{t(n === 1 ? 'list.count1' : 'list.count', { n })}</span><button onClick={reset}>{t('f.reset')}</button></div>
+    <div class="count hint"><span>{t(n === 1 ? 'list.count1' : 'list.count', { n })}</span><span class="cbtns"><button onClick={() => { haptic.tap(); setSheet({ savesearch: true }); }}>{t('ss.save')}</button><button onClick={reset}>{t('f.reset')}</button></span></div>
   );
   return (
     <div class={'home' + (view === 'map' ? ' mapmode' : '')}>

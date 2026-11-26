@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
-import { LISTINGS, TODAY } from '../data/mock';
+import { LISTINGS } from '../data/mock';
+import { todayIso } from '../data/store';
 import { useCtx, useT } from '../ctx';
 import { dispoLabel, num } from '../i18n';
 import { bindMain, haptic, inTelegram, listingLink, openTelegramLink } from '../tg';
@@ -34,11 +35,15 @@ export function Detail({ id }: { id: number }) {
   const cta = l ? `${t('d.write')} · ${t('kc', { n: num(l.rent) })}` : '';
   useEffect(() => {
     if (!l) return;
-    return bindMain({ text: cta, onClick: () => { haptic.success(); toast(t('d.write')); } });
+    return bindMain({ text: cta, onClick: () => { haptic.tap(); setSheet({ contact: id }); } });
   }, [id, lang]);
   if (!l) return null;
   const fav = saved(l.id);
-  const now = l.availableFrom <= TODAY;
+  const own = l.desc && Object.keys(l.desc).length ? l.desc : null;
+  const descLang = own ? (own[lang] ? lang : own[l.srcLang ?? ''] ? (l.srcLang as string) : (Object.keys(own)[0] as string)) : lang;
+  const descText = own ? (own[descLang] as string) : (DESC[lang] ?? DESC.en!)(l.district, l.dispo, l.area);
+  const descNote = own && descLang !== lang ? t('d.desc.orig', { l: descLang.toUpperCase() }) : null;
+  const now = l.availableFrom <= todayIso();
   const chips = [t(('fur.' + l.furnished) as 'fur.yes'), l.pets ? t('d.pets') : t('d.nopets'), ...l.amenities.map((a) => t(('amen.' + a) as 'amen.lift'))];
   const share = () => {
     const link = listingLink(l.id);
@@ -50,7 +55,7 @@ export function Detail({ id }: { id: number }) {
     <div class="detail">
       <div class="scroll">
         <div class="gal">
-          <Carousel seed={l.seed} count={l.photos} eager onTap={(idx) => setSheet({ gallery: l.id, idx })} />
+          <Carousel l={l} count={l.photos} eager onTap={(idx) => setSheet({ gallery: l.id, idx })} />
           <div class="gal-shade" />
           <div class="gal-bar">
             {!inTelegram() ? <button class="icon round" aria-label="‹" onClick={back}><Icon n="back" size={20} /></button> : <span />}
@@ -86,7 +91,7 @@ export function Detail({ id }: { id: number }) {
             {chips.length > 6 && <button class="cellrow" onClick={() => { haptic.select(); setAll(!all); }}><span style={{ color: 'var(--tg-accent)' }}>{all ? t('d.showless') : t('d.showall', { n: chips.length })}</span></button>}
           </div>
           <h5 class="sh">{t('d.desc')}</h5>
-          <div class="cells"><p class="desc">{(DESC[lang] ?? DESC.en!)(l.district, l.dispo, l.area)}</p></div>
+          <div class="cells"><p class="desc">{descText}</p>{descNote && <p class="hint" style={{ padding: '0 16px 12px' }}>{descNote}</p>}</div>
           <h5 class="sh">{t('d.loc')}</h5>
           <ApproxMap seed={l.seed} />
           <p class="hint" style={{ padding: '6px 32px 0', fontSize: '13px' }}>{t('d.locnote')}</p>
@@ -113,7 +118,7 @@ export function Detail({ id }: { id: number }) {
       {!inTelegram() && (
         <div class="cta">
           <div><b>{t('kc', { n: num(l.rent) })}</b><span class="hint"> {t('d.month')}</span></div>
-          <button class="btn primary" onClick={() => { haptic.success(); toast(t('d.write')); }}>{t('d.write')}</button>
+          <button class="btn primary" onClick={() => { haptic.tap(); setSheet({ contact: l.id }); }}>{t('d.write')}</button>
         </div>
       )}
     </div>

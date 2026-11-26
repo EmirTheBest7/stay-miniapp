@@ -34,6 +34,7 @@ export interface WebApp {
   openLink?(url: string, o?: { try_instant_view?: boolean }): void;
   openTelegramLink?(url: string): void;
   requestContact?(cb?: (shared: boolean) => void): void;
+  requestWriteAccess?(cb?: (allowed: boolean) => void): void;
   shareMessage?(id: string, cb?: (sent: boolean) => void): void;
   addToHomeScreen?(): void;
   isVersionAtLeast(v: string): boolean;
@@ -92,6 +93,13 @@ export function confirmNative(message: string, fallback = false): Promise<boolea
 export function openTelegramLink(url: string): void { const w = webApp(); w?.openTelegramLink ? w.openTelegramLink(url) : window.open(url, '_blank'); }
 export function openLink(url: string): void { const w = webApp(); w?.openLink ? w.openLink(url) : window.open(url, '_blank'); }
 
+/** Asks Telegram to let the bot message this person (Bot API 6.9). Resolves true when allowed; true outside Telegram (nothing to ask). */
+export function requestWriteAccess(): Promise<boolean> {
+  const w = webApp();
+  if (!w?.requestWriteAccess || !atLeast('6.9')) return Promise.resolve(true);
+  return new Promise((res) => w.requestWriteAccess!((ok) => res(!!ok)));
+}
+
 /** Asks Telegram to share the user's phone with the BOT (the bot validates user_id == sender). Resolves true when sent. */
 export function requestPhone(): Promise<boolean> {
   const w = webApp();
@@ -122,9 +130,9 @@ export function readyAndExpand(): void {
 export function listingLink(id: number, bot = 'domovo_app', app = 'app'): string { return `https://t.me/${bot}/${app}?startapp=l_${id}`; }
 
 /** Parses `l_<id>` start params. */
-export function parseStart(p: string | null): { listing?: number } {
-  const m = /^l_(\d{1,9})$/.exec(p ?? '');
-  return m ? { listing: Number(m[1]) } : {};
+export function parseStart(p: string | null): { listing?: number; thread?: number } {
+  const m = /^([lt])_(\d{1,9})$/.exec(p ?? '');
+  return m ? (m[1] === 'l' ? { listing: Number(m[2]) } : { thread: Number(m[2]) }) : {};
 }
 
 export function addToHomeScreen(): void { const w = webApp(); if (w?.addToHomeScreen && atLeast('8.0')) w.addToHomeScreen(); }

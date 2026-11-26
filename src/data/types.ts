@@ -36,7 +36,30 @@ export interface Listing {
   photos: number;
   host: Host;
   createdAt: number;        // days ago
+  // live listings only (the demo ones are procedural): real photo files, the host's own text, and the title
+  hashes?: { hash: string; ext: string }[];
+  desc?: Record<string, string>;
+  srcLang?: string;
 }
+
+/** A listing as its HOST sees it (private fields allowed: it is their own). Mirrors HostApi::own(). */
+export interface Own {
+  id: number; rev: number; status: 'draft' | 'in_review' | 'live' | 'paused' | 'rented' | 'expired' | 'rejected' | 'removed';
+  status_note: string | null; kind: Kind; city: string; district: string; dispo: string; area: number; floor: number; rent: number; fees: number;
+  fees_included: boolean; deposit: number; furnished: Furnished; pets: boolean; smoking: boolean; available_from: string | null; amenities: Amenity[];
+  energy: string | null; title: string; desc: Record<string, string>; photos: { id: number; hash: string; w: number; h: number; ext: string }[];
+  expires_at: number | null; address?: string | null; lat?: number | null; lng?: number | null;
+}
+
+export interface ThreadItem {
+  id: number; role: 'seeker' | 'host'; status: 'open' | 'closed'; unread: number;
+  listing: { id: number; title: string; city: string; district: string; rent: number; status: string };
+  peer: { label: string | null; shared: boolean }; i_shared: boolean;
+  last: { mine: boolean; text: string; at: number } | null;
+  contact?: { name: string; username: string | null; link: string };
+  messages?: { mine: boolean; text: string; at: number }[];
+}
+export interface SavedSearch { id: number; name: string; filters: Partial<Filters>; active: boolean }
 
 export interface Filters {
   city: CityId | 'all';

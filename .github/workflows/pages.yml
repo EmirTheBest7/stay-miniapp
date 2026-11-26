@@ -33,6 +33,7 @@ jobs:
         env:
           BUILD_ID: ${{ github.sha }}
           BASE: /stay-miniapp/
+          VITE_API_BASE: ${{ vars.API_BASE_URL }}
       - run: node scripts/check-size.mjs dist/assets && node scripts/check-licenses.mjs
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
       - uses: actions/upload-pages-artifact@0252fc4ba7626f0298f0cf00902a25c6afc77fa8 # v3.0.0

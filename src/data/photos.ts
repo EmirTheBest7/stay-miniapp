@@ -16,3 +16,18 @@ export function photo(seed: number, idx: number): string {
 
 /** For the wizard: a fixed photo by pool index. */
 export const poolPhoto = (n: number): string => `${BASE}demo/p${POOL[((n % POOL.length) + POOL.length) % POOL.length]}.jpg`;
+
+import type { Listing } from './types';
+import { mediaUrl } from '../api';
+
+/** One photo of a listing at a size: the real file for live listings (or a data URL in the demo wizard), a Pexels demo image otherwise. */
+export function lphoto(l: Listing, idx: number, size: 240 | 640 | 1280 = 640): string {
+  const h = l.hashes?.[idx];
+  if (!h) return photo(l.seed, idx);
+  return h.hash.startsWith('data:') ? h.hash : mediaUrl(h.hash, h.ext, size);
+}
+
+/** A photo row of the host's own listing (photos the host just picked in the DEMO wizard are data URLs). */
+export function ownPhoto(p: { hash: string; ext: string }, size: 240 | 640 | 1280 = 640): string {
+  return p.hash.startsWith('data:') ? p.hash : mediaUrl(p.hash, p.ext, size);
+}

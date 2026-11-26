@@ -1,8 +1,10 @@
 import { LISTINGS } from '../data/mock';
+import { useEffect, useState } from 'preact/hooks';
+import { read } from '../api';
 import { LANGS, type Lang } from '../i18n';
 import { useCtx, useT, type Wishlist } from '../ctx';
 import { addToHomeScreen, confirmNative, inTelegram, tgUser } from '../tg';
-import { photo } from '../data/photos';
+import { lphoto } from '../data/photos';
 import { Card } from '../ui/Card';
 import { Chip, Empty } from '../ui/bits';
 import { Icon } from '../ui/icons';
@@ -31,7 +33,7 @@ function WishCard({ l, onOpen }: { l: Wishlist; onOpen(): void }) {
   const first = LISTINGS.find((x) => x.id === l.ids[0]);
   return (
     <button class="wcard" onClick={onOpen}>
-      <div class="wcover">{first ? <img src={photo(first.seed, 0)} alt="" width={320} height={320} loading="lazy" /> : <Icon n="star" size={32} />}</div>
+      <div class="wcover">{first ? <img src={lphoto(first, 0, 240)} alt="" width={320} height={320} loading="lazy" /> : <Icon n="star" size={32} />}</div>
       <b>{listName(l, t('wl.default'))}</b>
       <span class="hint">{t('wl.count', { n: l.ids.length })}</span>
     </button>
@@ -54,13 +56,10 @@ export function WishlistPage({ id }: { id: string }) {
   );
 }
 
-export function Messages() {
-  const t = useT();
-  return <div class="scroll"><div class="narrow"><h1 class="pg">{t('m.title')}</h1><Empty title={t('m.empty')} sub={t('m.empty.sub')} icon="chat" /></div></div>;
-}
-
 export function Profile() {
-  const { lang, setLang, lists, goTab } = useCtx();
+  const { lang, setLang, lists, goTab, push, role, unread, mineVer } = useCtx();
+  const [mineN, setMineN] = useState<number | null>(null);
+  useEffect(() => { void read<{ items: unknown[] }>('listings/mine').then((r) => setMineN(r.items.length)).catch(() => {}); }, [mineVer]);
   const t = useT();
   const u = tgUser();
   const names: Record<Lang, string> = { ru: 'Русский', cs: 'Čeština', en: 'English', uk: 'Українська' };
@@ -83,8 +82,10 @@ export function Profile() {
       <h5 class="sh">{t('p.sec.you')}</h5>
       <div class="cells list">
         <button class="lrow" onClick={() => goTab('favs')}><span><Icon n="star" size={18} /> {t('fav.title')}</span><span class="hint">{t('p.saved')}: {savedN} · {t('p.lists')}: {lists.length}<Icon n="right" size={16} /></span></button>
-        <button class="lrow" onClick={() => goTab('host')}><span><Icon n="home" size={18} /> {t('p.mylistings')}</span><span class="hint">0<Icon n="right" size={16} /></span></button>
-        <button class="lrow" onClick={() => goTab('msgs')}><span><Icon n="chat" size={18} /> {t('m.title')}</span><Icon n="right" size={16} /></button>
+        <button class="lrow" onClick={() => push({ t: 'mine' })}><span><Icon n="home" size={18} /> {t('p.mylistings')}</span><span class="hint">{mineN ?? ''}<Icon n="right" size={16} /></span></button>
+        <button class="lrow" onClick={() => goTab('msgs')}><span><Icon n="chat" size={18} /> {t('m.title')}</span><span class="hint">{unread > 0 ? unread : ''}<Icon n="right" size={16} /></span></button>
+        <button class="lrow" onClick={() => push({ t: 'searches' })}><span><Icon n="search" size={18} /> {t('p.searches')}</span><Icon n="right" size={16} /></button>
+        {role !== 'user' && <button class="lrow" onClick={() => push({ t: 'mod' })}><span><Icon n="shield" size={18} /> Модерация</span><Icon n="right" size={16} /></button>}
       </div>
       <h5 class="sh">{t('p.lang')}</h5>
       <div class="cells"><div><div class="chips wrap">{LANGS.map((l) => <Chip key={l} on={l === lang} onClick={() => setLang(l)}>{names[l]}</Chip>)}</div></div></div>

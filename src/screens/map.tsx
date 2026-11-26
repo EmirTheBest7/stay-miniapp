@@ -5,7 +5,7 @@ import { useCtx, useT } from '../ctx';
 import { dispoLabel, num } from '../i18n';
 import { haptic } from '../tg';
 import { Icon } from '../ui/icons';
-import { photo } from '../data/photos';
+import { lphoto } from '../data/photos';
 
 // Lazy chunk. PROTOTYPE map: a synthetic SVG basemap (no tiles, no keys, no network). Production = Mapy.com tiles
 // (docs/mapy-setup.md) under the same price pills / cluster / bottom-sheet layer. Only approximate positions are ever plotted.
@@ -123,7 +123,7 @@ export default function MapView({ items, onToggle }: { items: Listing[]; onToggl
         <div class="mlist" style={{ overflowY: snap === 'full' ? 'auto' : 'hidden' }}>
           {(selL ? [selL, ...here.filter((x) => x.id !== selL.id)] : here).map((l) => (
             <button key={l.id} class={'mrow' + (l.id === sel ? ' on' : '')} onClick={() => open(l.id)}>
-              <img src={photo(l.seed, 0)} alt="" width={96} height={72} loading="lazy" />
+              <img src={lphoto(l, 0, 240)} alt="" width={96} height={72} loading="lazy" />
               <span><b>{l.district}</b><small>{dispoLabel(lang, l.dispo)} · {t('d.area', { n: l.area })}</small><b class="pr">{t('kc', { n: num(l.rent) })} <i>{t('d.month')}</i></b></span>
             </button>
           ))}

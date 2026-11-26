@@ -26,7 +26,7 @@ export function Card({ l, eager }: { l: Listing; eager?: boolean }) {
   return (
     <article class="card" data-id={l.id}>
       <div class="photo">
-        <Carousel seed={l.seed} count={l.photos} eager={eager} onTap={() => open(l.id)} />
+        <Carousel l={l} count={l.photos} eager={eager} onTap={() => open(l.id)} />
         <button class={'heart' + (fav ? ' on' : '')} aria-label="♥" aria-pressed={fav} onClick={(e) => { e.stopPropagation(); haptic.tap(); setSheet({ save: l.id }); }}>
           <Icon n="star" size={20} />
         </button>
@@ -49,7 +49,7 @@ export function RailCard({ l }: { l: Listing }) {
   return (
     <article class="rcard" onClick={() => open(l.id)}>
       <div class="photo">
-        <Carousel seed={l.seed} count={Math.min(l.photos, 3)} onTap={() => open(l.id)} />
+        <Carousel l={l} count={Math.min(l.photos, 3)} onTap={() => open(l.id)} />
         <button class={'heart' + (fav ? ' on' : '')} aria-label="★" aria-pressed={fav} onClick={(e) => { e.stopPropagation(); haptic.tap(); setSheet({ save: l.id }); }}><Icon n="star" size={18} /></button>
         <Badge l={l} />
       </div>

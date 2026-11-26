@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { LISTINGS } from '../data/mock';
-import { photo } from '../data/photos';
+import { lphoto } from '../data/photos';
 import { useCtx, useT } from '../ctx';
+import { write } from '../api';
+import { errText } from '../err';
 import { haptic } from '../tg';
 import { Sheet } from '../ui/Sheet';
 import { Icon } from '../ui/icons';
@@ -18,7 +20,7 @@ export function Gallery({ id, idx }: { id: number; idx: number }) {
     <div class="viewer" role="dialog" aria-label={t('ph', { n: i + 1 })}>
       <button class="icon round vclose" aria-label={t('close')} onClick={() => setSheet(null)}><Icon n="close" size={20} /></button>
       <div class="vstrip" ref={ref} onScroll={() => { const el = ref.current; if (el) setI(Math.round(el.scrollLeft / el.clientWidth)); }}>
-        {Array.from({ length: l.photos }, (_, k) => <img key={k} src={photo(l.seed, k)} alt="" width={1280} height={960} />)}
+        {Array.from({ length: l.photos }, (_, k) => <img key={k} src={lphoto(l, k, 1280)} alt="" width={1280} height={960} />)}
       </div>
       <div class="vcount">{i + 1} {t('of')} {l.photos}</div>
     </div>
@@ -42,7 +44,7 @@ export function SaveSheet({ id }: { id: number }) {
           const first = LISTINGS.find((x) => x.id === w.ids[0]) ?? l;
           return (
             <button key={w.id} class={'wl-row' + (on ? ' on' : '')} onClick={() => { haptic.select(); toggleInList(w.id, id); }} aria-pressed={on}>
-              {first && <img src={photo(first.seed, 0)} alt="" width={56} height={56} />}
+              {first && <img src={lphoto(first, 0, 240)} alt="" width={56} height={56} />}
               <span><b>{w.name || t('wl.default')}</b><small class="hint">{t('wl.count', { n: w.ids.length })}</small></span>
               <i class="tick">{on && <Icon n="check" size={18} />}</i>
             </button>
@@ -66,10 +68,12 @@ export function Report({ id }: { id: number }) {
   const t = useT();
   const [cat, setCat] = useState<string | null>(null);
   const cats: [string, 'r.scam'][] = [['scam', 'r.scam'], ['wrong', 'r.scam'], ['disc', 'r.scam'], ['rented', 'r.scam'], ['other', 'r.scam']];
-  void id;
+  const [busy, setBusy] = useState(false);
+  const wire: Record<string, string> = { scam: 'scam', wrong: 'wrong', disc: 'discrimination', rented: 'rented', other: 'other' };
+  const send = async (): Promise<void> => { setBusy(true); try { await write('report/create', { listing_id: id, category: wire[cat!] }); haptic.success(); toast(t('r.thanks')); setSheet(null); } catch (e) { haptic.error(); toast(errText(t, e)); setBusy(false); } };
   return (
     <Sheet title={t('r.title')} onClose={() => setSheet(null)}
-      footer={<div class="foot"><button class="btn primary grow" disabled={!cat} onClick={() => { haptic.success(); toast(t('r.thanks')); setSheet(null); }}>{t('r.send')}</button></div>}>
+      footer={<div class="foot"><button class="btn primary grow" disabled={!cat || busy} onClick={send}>{t('r.send')}</button></div>}>
       <div class="radios">
         {cats.map(([k]) => (
           <label key={k} class={'rad' + (cat === k ? ' on' : '')}>

@@ -1,4 +1,4 @@
-import { TODAY } from './mock';
+import { todayIso } from './store';
 import type { Filters, Listing } from './types';
 
 export function matches(l: Listing, f: Filters): boolean {
@@ -14,7 +14,7 @@ export function matches(l: Listing, f: Filters): boolean {
   if (f.depositMax != null && l.deposit > f.depositMax) return false;
   if (f.feesIncluded && !l.feesIncluded) return false;
   if (f.advertiser !== 'all' && l.host.type !== f.advertiser) return false;
-  if (f.availableNow && l.availableFrom > TODAY) return false;
+  if (f.availableNow && l.availableFrom > todayIso()) return false;
   if (f.amenities.length && !f.amenities.every((a) => l.amenities.includes(a))) return false;
   return true;
 }

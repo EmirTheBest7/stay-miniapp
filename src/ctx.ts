@@ -24,9 +24,19 @@ export interface Ctx {
   goTab(t: string): void;
   sheet: Sheet | null;
   setSheet(s: Sheet | null): void;
+  /** bumped whenever the loaded listings change; `loaded` is false until the first load finished (live mode) */
+  dataVer: number;
+  loaded: boolean;
+  role: 'user' | 'moderator' | 'owner';
+  unread: number;
+  refreshInbox(): void;
+  /** the host's wizard / thread screens reload their lists after a change */
+  mineVer: number;
+  bumpMine(): void;
 }
-export type Route = { t: 'detail'; id: number } | { t: 'wizard'; step: number } | { t: 'search'; step: number } | { t: 'list'; id: string };
-export type Sheet = 'filters' | { report: number } | { gallery: number; idx: number } | { save: number };
+export type Route = { t: 'detail'; id: number } | { t: 'wizard'; step: number; id?: number } | { t: 'search'; step: number } | { t: 'list'; id: string }
+  | { t: 'mine' } | { t: 'thread'; id: number } | { t: 'searches' } | { t: 'mod' };
+export type Sheet = 'filters' | { report: number } | { gallery: number; idx: number } | { save: number } | { contact: number } | { savesearch: true };
 
 export const C = createContext<Ctx>(null as unknown as Ctx);
 export const useCtx = (): Ctx => useContext(C);

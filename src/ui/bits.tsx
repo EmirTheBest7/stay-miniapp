@@ -36,14 +36,14 @@ export function Empty({ title, sub, action, icon = 'home' }: { title: string; su
   );
 }
 
-export function TabBar({ tab, setTab, favCount }: { tab: string; setTab(t: string): void; favCount: number }) {
+export function TabBar({ tab, setTab, favCount, unread = 0 }: { tab: string; setTab(t: string): void; favCount: number; unread?: number }) {
   const t = useT();
   const items: [string, string, string][] = [['explore', 'search', 'tab.explore'], ['favs', 'star', 'tab.favs'], ['host', 'plus', 'tab.host'], ['msgs', 'chat', 'tab.msgs'], ['me', 'user', 'tab.me']];
   return (
     <nav class="tabs">
       {items.map(([id, ic, key]) => (
         <button key={id} class={tab === id ? 'on' : ''} onClick={() => { haptic.select(); setTab(id); }} aria-current={tab === id ? 'page' : undefined}>
-          <span class="ti"><Icon n={ic} size={24} />{id === 'favs' && favCount > 0 && <em>{favCount}</em>}</span>
+          <span class="ti"><Icon n={ic} size={24} />{id === 'favs' && favCount > 0 && <em>{favCount}</em>}{id === 'msgs' && unread > 0 && <em>{unread}</em>}</span>
           <span>{t(key as 'tab.explore')}</span>
         </button>
       ))}
