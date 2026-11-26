@@ -16,7 +16,7 @@ type Stage = (typeof STAGES)[number];
 interface Client { id: number; name: string; phone: string | null; email: string | null; note: string | null; stage: Stage; source: string; assigned_to: number | null; props: number; thread_id: number | null;
   properties?: { id: number; title: string; status: string; rent: number }[]; notes?: { id: number; author: string; text: string; at: number }[] }
 
-export const inviteLink = (code: string): string => `https://t.me/domovo_app/app?startapp=a_${code}`;
+export const inviteLink = (code: string): string => `https://t.me/domovo_app?startapp=a_${code}`;
 
 /** Agency workspace: the verified company, its team, and invites. Everyone in the team works on the same listings, inbox and CRM. */
 export function AgencyPage() {

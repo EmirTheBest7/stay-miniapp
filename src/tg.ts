@@ -126,8 +126,8 @@ export function readyAndExpand(): void {
   if (atLeast('7.7')) w.disableVerticalSwipes?.();      // keeps scroll gestures from closing the app
 }
 
-/** Shareable per-listing deep link: https://t.me/<bot>/<app>?startapp=l_<id> (the real bot/app names come from config at launch). */
-export function listingLink(id: number, bot = 'domovo_app', app = 'app'): string { return `https://t.me/${bot}/${app}?startapp=l_${id}`; }
+/** Shareable per-listing deep link to the bot's Main Mini App: https://t.me/<bot>?startapp=l_<id>. */
+export function listingLink(id: number, bot = 'domovo_app'): string { return `https://t.me/${bot}?startapp=l_${id}`; }
 
 /** Parses `l_<id>` start params. */
 export function parseStart(p: string | null): { listing?: number; thread?: number; agency?: string } {
