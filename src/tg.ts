@@ -9,6 +9,7 @@ export interface ThemeParams {
 interface Btn {
   text: string; isVisible: boolean; isActive: boolean; isProgressVisible: boolean;
   setText(t: string): Btn; onClick(cb: () => void): Btn; offClick(cb: () => void): Btn;
+  setParams?(p: { text?: string; color?: string; text_color?: string; is_active?: boolean; is_visible?: boolean }): Btn;
   show(): Btn; hide(): Btn; enable(): Btn; disable(): Btn; showProgress(leave?: boolean): Btn; hideProgress(): Btn;
 }
 export interface WebApp {
@@ -74,6 +75,9 @@ export function bindMain(opts: { text: string; onClick: () => void; enabled?: bo
   const m = webApp()?.MainButton;
   if (!m || !opts) { m?.hide(); return () => {}; }
   m.setText(opts.text);
+  // our accent on Telegram's native button (setParams exists from Bot API 7.10; older clients keep their own colour)
+  const cs = getComputedStyle(document.documentElement);
+  try { m.setParams?.({ color: cs.getPropertyValue('--accent').trim() || undefined, text_color: cs.getPropertyValue('--on-accent').trim() || undefined }); } catch { /* old client */ }
   opts.enabled === false ? m.disable() : m.enable();
   opts.busy ? m.showProgress(false) : m.hideProgress();
   m.onClick(opts.onClick); m.show();
