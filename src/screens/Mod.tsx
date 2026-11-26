@@ -24,6 +24,7 @@ export default function Mod() {
     void read<{ items: Rep[] }>('m/reports').then((r) => setReps(r.items)).catch(() => {});
   };
   useEffect(load, []);
+  useEffect(() => { const id = Number(new URLSearchParams(location.search).get('case')); if (id) void read<Case>('m/case', { case_id: id }).then(setOpen).catch(() => {}); }, []);      // the button in the Telegram notification opens this very case
   const run = async (route: string, data: Record<string, unknown>, ask?: string): Promise<void> => {
     if (ask && !(await confirmNative(ask, true))) return;
     try { await write(route, data); haptic.success(); setOpen(null); setNote(''); load(); } catch { haptic.error(); toast('Ошибка'); }

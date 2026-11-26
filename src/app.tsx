@@ -153,7 +153,7 @@ export function App() {
         {typeof sheet === 'object' && sheet && 'report' in sheet && <Report id={sheet.report} />}
         {typeof sheet === 'object' && sheet && 'gallery' in sheet && <Gallery id={sheet.gallery} idx={sheet.idx} />}
         {typeof sheet === 'object' && sheet && 'save' in sheet && <SaveSheet id={sheet.save} />}
-        {!live() && inTelegram() && <div class="demo-banner" role="status">{tr(lang, 'demo.banner')}</div>}
+        {!live() && inTelegram() && !qs.has('fake') && <div class="demo-banner" role="status">{tr(lang, 'demo.banner')}</div>}
         <Toast msg={msg} />
       </div>
     </C.Provider>
