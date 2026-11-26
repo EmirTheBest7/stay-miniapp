@@ -17,7 +17,7 @@ export function Favs() {
   return (
     <div class="scroll">
       <h1 class="pg">{t('fav.title')}</h1>
-      {shown.length === 0 ? <Empty title={t('fav.empty')} sub={t('fav.empty.sub')} icon="heart" /> : (
+      {shown.length === 0 ? <Empty title={t('fav.empty')} sub={t('fav.empty.sub')} icon="star" /> : (
         <div class="wgrid">
           {shown.map((l) => <WishCard key={l.id} l={l} onOpen={() => { haptic.tap(); push({ t: 'list', id: l.id }); }} />)}
         </div>
@@ -31,7 +31,7 @@ function WishCard({ l, onOpen }: { l: Wishlist; onOpen(): void }) {
   const first = LISTINGS.find((x) => x.id === l.ids[0]);
   return (
     <button class="wcard" onClick={onOpen}>
-      <div class="wcover">{first ? <img src={photo(first.seed, 0)} alt="" width={320} height={320} loading="lazy" /> : <Icon n="heart" size={32} />}</div>
+      <div class="wcover">{first ? <img src={photo(first.seed, 0)} alt="" width={320} height={320} loading="lazy" /> : <Icon n="star" size={32} />}</div>
       <b>{listName(l, t('wl.default'))}</b>
       <span class="hint">{t('wl.count', { n: l.ids.length })}</span>
     </button>
@@ -48,7 +48,7 @@ export function WishlistPage({ id }: { id: string }) {
   return (
     <div class="scroll">
       <div class="wl-head"><h1 class="pg">{listName(l, t('wl.default'))}</h1></div>
-      {items.length === 0 ? <Empty title={t('fav.empty')} sub={t('fav.empty.sub')} icon="heart" /> : items.map((x) => <Card key={x.id} l={x} eager />)}
+      {items.length === 0 ? <Empty title={t('fav.empty')} sub={t('fav.empty.sub')} icon="star" /> : items.map((x) => <Card key={x.id} l={x} eager />)}
       <button class="btn ghost danger wide" onClick={async () => { haptic.warn(); if (await confirmNative(t('wl.delete.confirm', { name: listName(l, t('wl.default')) }), true)) { deleteList(id); back(); } }}>{t('wl.delete')}</button>
     </div>
   );
