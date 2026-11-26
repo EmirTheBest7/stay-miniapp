@@ -7,7 +7,7 @@ export interface PublicListing {
   deposit: number; furnished: Furnished; pets: boolean; smoking: boolean; available_from: string | null; amenities: Amenity[]; energy: string | null;
   lat: number | null; lng: number | null; title: string; desc: Record<string, string>; src_lang: string;
   photos: { hash: string; w: number; h: number; ext?: string }[];
-  host: { type: 'private' | 'agency'; name: string; since: number; verified: boolean; ico: string | null };
+  host: { type: 'private' | 'agency'; name: string; since: number; verified: boolean; ico: string | null; badge?: 'agency' | 'owner' | 'phone' | null };
   published_at: number;
 }
 
@@ -15,7 +15,7 @@ export function fromPublic(p: PublicListing, nowSec = Math.floor(Date.now() / 10
   return {
     id: p.id, kind: p.kind, city: p.city, district: p.district, dispo: p.dispo, area: p.area, floor: p.floor, rent: p.rent, fees: p.fees, feesIncluded: p.fees_included,
     deposit: p.deposit, furnished: p.furnished, pets: p.pets, availableFrom: p.available_from ?? '1970-01-01', amenities: p.amenities ?? [], energy: p.energy ?? '–',
-    lat: p.lat ?? 0, lng: p.lng ?? 0, seed: p.id, photos: p.photos.length, host: { type: p.host.type, name: p.host.name, since: p.host.since, verified: p.host.verified, ico: p.host.ico ?? undefined },
+    lat: p.lat ?? 0, lng: p.lng ?? 0, seed: p.id, photos: p.photos.length, host: { type: p.host.type, name: p.host.name, since: p.host.since, verified: p.host.verified, ico: p.host.ico ?? undefined, badge: p.host.badge ?? null },
     createdAt: Math.max(0, Math.floor((nowSec - p.published_at) / 86400)),
     hashes: p.photos.map((x) => ({ hash: x.hash, ext: x.ext ?? 'webp' })), desc: p.desc, srcLang: p.src_lang,
   };

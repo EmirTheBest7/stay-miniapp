@@ -46,6 +46,8 @@ export function ThreadPage({ id }: { id: number }) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
+  const [agent, setAgent] = useState(false);
+  useEffect(() => { void read<{ role: string | null }>('agency/info').then((a) => setAgent(!!a.role)).catch(() => {}); }, []);
   const load = (): void => { void read<ThreadItem>('thread/get', { thread_id: id }).then((r) => { setTh(r); refreshInbox(); }).catch(() => {}); };
   useEffect(() => { load(); const iv = setInterval(() => { if (document.visibilityState === 'visible') load(); }, 12000); return () => clearInterval(iv); }, [id]);
   useEffect(() => { end.current?.scrollIntoView({ block: 'end' }); }, [th?.messages?.length]);
@@ -90,6 +92,7 @@ export function ThreadPage({ id }: { id: number }) {
           <div class="th-actions">
             {!th.i_shared && !closed && <button class="btn ghost" onClick={share}><Icon n="user" size={16} /> {t('th.share')}</button>}
             {th.i_shared && <span class="ok hint"><Icon n="check" size={12} /> {t('th.shared')}</span>}
+            {th.role === 'host' && agent && <button class="btn ghost" onClick={async () => { try { await write('crm/from_thread', { thread_id: id }); haptic.success(); toast(t('crm.added')); } catch (e) { toast(errText(t, e)); } }}>{t('crm.fromthread')}</button>}
             {th.role === 'host' && !closed && <button class="btn ghost danger" onClick={block}>{t('th.block')}</button>}
           </div>
           {!th.i_shared && !closed && <p class="hint th-note">{t('th.private')}</p>}

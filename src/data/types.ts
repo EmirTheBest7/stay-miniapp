@@ -11,6 +11,8 @@ export interface Host {
   verified: boolean;
   /** agencies only (DSA trader traceability); private owners never need one */
   ico?: string;
+  /** what the check mark means: agency (IČO verified in ARES) | owner (manual badge) | phone (Telegram contact share) */
+  badge?: 'agency' | 'owner' | 'phone' | null;
 }
 
 export interface Listing {

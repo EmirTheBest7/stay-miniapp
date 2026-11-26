@@ -105,7 +105,7 @@ export function Detail({ id }: { id: number }) {
                 <b>{l.host.name}</b>
                 <div class="hint">{t('d.since', { y: l.host.since })}</div>
                 <div class="hint"><HostLabel l={l} />{l.host.ico ? ' · ' + t('d.ico', { n: l.host.ico }) : ''}</div>
-                {l.host.verified && <div class="ok"><Icon n="check" size={14} /> {t('d.verified')}</div>}
+                {l.host.verified && <div class="ok"><Icon n="check" size={14} /> {l.host.badge ? t(('vf.badge.' + l.host.badge) as 'vf.badge.agency') : t('d.verified')}</div>}
               </div>
             </div>
             <div class="safety"><Icon n="shield" size={18} /><span>{t('d.safety')}</span></div>

@@ -130,7 +130,9 @@ export function readyAndExpand(): void {
 export function listingLink(id: number, bot = 'domovo_app', app = 'app'): string { return `https://t.me/${bot}/${app}?startapp=l_${id}`; }
 
 /** Parses `l_<id>` start params. */
-export function parseStart(p: string | null): { listing?: number; thread?: number } {
+export function parseStart(p: string | null): { listing?: number; thread?: number; agency?: string } {
+  const a = /^a_([a-f0-9]{16})$/.exec(p ?? '');
+  if (a) return { agency: a[1] };
   const m = /^([lt])_(\d{1,9})$/.exec(p ?? '');
   return m ? (m[1] === 'l' ? { listing: Number(m[2]) } : { thread: Number(m[2]) }) : {};
 }

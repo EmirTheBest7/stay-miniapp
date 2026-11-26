@@ -14,6 +14,9 @@ let hostType: 'private' | 'agency' | null = null;
 const threads: ThreadItem[] = [];
 const searches: SavedSearch[] = [];
 let role = new URLSearchParams(location.search).get('role') ?? 'user';
+const agencyOn = new URLSearchParams(location.search).get('agency') === '1';
+const crm: any[] = agencyOn ? [{ id: 1, name: 'Petr Dvořák (ukázka)', phone: '+420 777 000 111', email: null, note: 'Hledá 2+kk', stage: 'viewing', source: 'manual', assigned_to: 1, props: 1, thread_id: null, properties: [], notes: [], updated_at: 1790000000 }, { id: 2, name: 'Olena Marková (ukázka)', phone: null, email: 'olena@example.cz', note: null, stage: 'new', source: 'manual', assigned_to: 1, props: 0, thread_id: null, properties: [], notes: [], updated_at: 1790000100 }] : [];
+let nextClient = 10;
 
 const find = (id: unknown): Own => { const o = own.find((x) => x.id === id); if (!o) throw new ApiErr(404, 'not_found'); return o; };
 const copy = <T>(x: T): T => JSON.parse(JSON.stringify(x));
@@ -36,7 +39,7 @@ export async function demo<T>(route: string, d: Record<string, any>): Promise<T>
 
 function handle(route: string, d: Record<string, any>): any {
   switch (route) {
-    case 'bootstrap': return { me: { id: 1, name: 'Anna Nováková', role, lang: 'cs' } };
+    case 'bootstrap': return { me: { id: 1, name: 'Anna Nováková', role, lang: 'cs' }, verification: { phone: false, agency: agencyOn, owner: false, badge: agencyOn ? 'agency' : null }, features: { payments: false } };
     case 'host/profile': hostType = d.type; return { host_type: d.type };
     case 'listing/save': {
       let o: Own;
@@ -104,6 +107,28 @@ function handle(route: string, d: Record<string, any>): any {
     case 'search/delete': { const i = searches.findIndex((s) => s.id === d.id); if (i < 0) throw new ApiErr(404, 'not_found'); searches.splice(i, 1); return { id: d.id }; }
     case 'search/toggle': { const s = searches.find((x) => x.id === d.id); if (!s) throw new ApiErr(404, 'not_found'); s.active = !!d.active; return { id: s.id }; }
     case 'me/write_access': return { pm_ok: true };
+    case 'agency/info': return agencyOn ? { role: 'owner', me: 1, agency: { id: 1, name: 'Střecha Reality (ukázka)', ico: '12345679' }, members: [{ user_id: 1, role: 'owner', name: 'Anna Nováková' }, { user_id: 2, role: 'agent', name: 'Petr Dvořák' }], invites: 0 } : { role: null, can_create: false };
+    case 'agency/invite': return { code: 'abcdef0123456789', expires_at: now() + 7 * 86400 };
+    case 'agency/join': case 'agency/member.remove': case 'agency/member.role': return handle('agency/info', {});
+    case 'host/verify': return { name: 'Střecha Reality s.r.o.', address: 'Praha', active: true, state: {} };
+    case 'crm/board': { const items = crm.filter((c) => !d.stage || c.stage === d.stage); const counts: Record<string, number> = {}; crm.forEach((c) => { counts[c.stage] = (counts[c.stage] ?? 0) + 1; }); return { counts, items }; }
+    case 'crm/client.get': { const c = crm.find((x) => x.id === d.id); if (!c) throw new ApiErr(404, 'not_found'); return c; }
+    case 'crm/client.save': {
+      let c = crm.find((x) => x.id === d.id);
+      if (!c) { c = { id: nextClient++, name: '', phone: null, email: null, note: null, stage: 'new', source: 'manual', assigned_to: 1, props: 0, thread_id: null, properties: [], notes: [], updated_at: now() }; crm.unshift(c); }
+      Object.assign(c, { name: d.name ?? c.name, phone: d.phone || null, email: d.email || null, note: d.note || null, stage: d.stage ?? c.stage, updated_at: now() });
+      c.properties = (d.listing_ids ?? []).map((i: number) => { const o = own.find((x) => x.id === i); return { id: i, title: o?.title ?? '#' + i, status: o?.status ?? 'live', rent: o?.rent ?? 0 }; }); c.props = c.properties.length;
+      return c;
+    }
+    case 'crm/note.add': { const c = crm.find((x) => x.id === d.client_id); if (!c) throw new ApiErr(404, 'not_found'); c.notes!.unshift({ id: Date.now(), author: 'Anna Nováková', text: d.text, at: now() }); return c; }
+    case 'crm/client.delete': { const i = crm.findIndex((x) => x.id === d.id); if (i >= 0) crm.splice(i, 1); return { id: d.id }; }
+    case 'crm/from_thread': { const c = { id: nextClient++, name: 'Seeker #' + d.thread_id, phone: null, email: null, note: null, stage: 'new' as const, source: 'thread', assigned_to: 1, props: 1, thread_id: d.thread_id, properties: [], notes: [], updated_at: now() }; crm.unshift(c); return c; }
+    case 'me/export': return { profile: { name: 'Anna Nováková' }, listings: own.length, threads: threads.length };
+    case 'me/delete': return { deleted: true };
+    case 'admin/overview': return { role: 'owner', perms: ['listings', 'reports', 'verify', 'ban', 'payments'], listings: [{ status: 'live', n: LISTINGS.length }], users: 12, open_cases: 1, open_reports: 0, open_verifications: 1, sync: { pending: 0, stale: 0, max_lag_s: 2 }, media: { pct: 12 }, flags: {} };
+    case 'admin/flags.get': return { payments: false, ai_screen: false, price_czk: 25, price_stars: 0, ss: '0', iban: '', order_days: 7 };
+    case 'admin/team.list': return { items: [{ tg_id: 1001, role: 'owner', perms: [], source: 'env' }] };
+    case 'admin/verif.list': case 'admin/orders.list': case 'admin/audit': case 'admin/listings.search': return { items: [] };
     case 'm/queue': return { items: [] };
     case 'm/reports': return { items: [] };
     case 'm/stats': return {};

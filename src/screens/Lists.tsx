@@ -1,9 +1,11 @@
 import { LISTINGS } from '../data/mock';
 import { useEffect, useState } from 'preact/hooks';
-import { read } from '../api';
+import { read, write } from '../api';
+import { errText } from '../err';
+import type { Key } from '../i18n';
 import { LANGS, type Lang } from '../i18n';
 import { useCtx, useT, type Wishlist } from '../ctx';
-import { addToHomeScreen, confirmNative, inTelegram, tgUser } from '../tg';
+import { addToHomeScreen, confirmNative, inTelegram, requestPhone, tgUser, webApp } from '../tg';
 import { lphoto } from '../data/photos';
 import { Card } from '../ui/Card';
 import { Chip, Empty } from '../ui/bits';
@@ -57,12 +59,21 @@ export function WishlistPage({ id }: { id: string }) {
 }
 
 export function Profile() {
-  const { lang, setLang, lists, goTab, push, role, unread, mineVer } = useCtx();
+  const { lang, setLang, lists, goTab, push, role, unread, mineVer, toast } = useCtx();
   const [mineN, setMineN] = useState<number | null>(null);
+  const [boot, setBoot] = useState<{ agency: boolean; canAgency: boolean; phone: boolean; badge: string | null } | null>(null);
+  useEffect(() => { void read<{ verification?: { phone: boolean; badge: string | null } }>('bootstrap').then((b) => read<{ role: string | null; can_create?: boolean }>('agency/info').then((a) => setBoot({ agency: !!a.role, canAgency: !!a.can_create, phone: !!b.verification?.phone, badge: b.verification?.badge ?? null }))).catch(() => {}); }, [mineVer]);
   useEffect(() => { void read<{ items: unknown[] }>('listings/mine').then((r) => setMineN(r.items.length)).catch(() => {}); }, [mineVer]);
   const t = useT();
   const u = tgUser();
   const names: Record<Lang, string> = { ru: 'Русский', cs: 'Čeština', en: 'English', uk: 'Українська' };
+  const exportData = async (): Promise<void> => {
+    try { const d = await read('me/export'); const txt = JSON.stringify(d, null, 2); await navigator.clipboard?.writeText(txt).catch(() => {}); haptic.success(); toast(t('pr.exported')); } catch { toast(t('err.generic')); }
+  };
+  const deleteAccount = async (): Promise<void> => {
+    if (!(await confirmNative(t('pr.delete.confirm'), true))) return;
+    try { await write('me/delete', { confirm: true }); haptic.warn(); toast(t('pr.deleted')); setTimeout(() => webApp()?.close(), 800); } catch (e) { toast(errText(t, e)); }
+  };
   const savedN = lists.reduce((n, l) => n + l.ids.length, 0);
   return (
     <div class="scroll"><div class="narrow">
@@ -85,13 +96,20 @@ export function Profile() {
         <button class="lrow" onClick={() => push({ t: 'mine' })}><span><Icon n="home" size={18} /> {t('p.mylistings')}</span><span class="hint">{mineN ?? ''}<Icon n="right" size={16} /></span></button>
         <button class="lrow" onClick={() => goTab('msgs')}><span><Icon n="chat" size={18} /> {t('m.title')}</span><span class="hint">{unread > 0 ? unread : ''}<Icon n="right" size={16} /></span></button>
         <button class="lrow" onClick={() => push({ t: 'searches' })}><span><Icon n="search" size={18} /> {t('p.searches')}</span><Icon n="right" size={16} /></button>
-        {role !== 'user' && <button class="lrow" onClick={() => push({ t: 'mod' })}><span><Icon n="shield" size={18} /> Модерация</span><Icon n="right" size={16} /></button>}
+        {role === 'owner' || role === 'admin' ? <button class="lrow" onClick={() => push({ t: 'admin' })}><span><Icon n="shield" size={18} /> Администрирование</span><Icon n="right" size={16} /></button> : role === 'moderator' ? <button class="lrow" onClick={() => push({ t: 'admin' })}><span><Icon n="shield" size={18} /> Модерация</span><Icon n="right" size={16} /></button> : null}
+        {(boot?.agency || boot?.canAgency) && <button class="lrow" onClick={() => push({ t: 'agency' })}><span><Icon n="home" size={18} /> {t('ag.title')}</span><Icon n="right" size={16} /></button>}
+      </div>
+      <h5 class="sh">{t('vf.title')}</h5>
+      <div class="cells list">
+        <button class="lrow" onClick={async () => { if (await requestPhone()) { haptic.success(); toast(t('vf.phone.sent')); } }}><span><Icon n="user" size={18} /> {t('vf.phone')}</span><span class="hint">{boot?.phone ? '✓' : ''}<Icon n="right" size={16} /></span></button>
+        {boot?.badge && <div class="lrow"><span class="ok"><Icon n="check" size={16} /> {t(('vf.badge.' + boot.badge) as Key)}</span></div>}
       </div>
       <h5 class="sh">{t('p.lang')}</h5>
       <div class="cells"><div><div class="chips wrap">{LANGS.map((l) => <Chip key={l} on={l === lang} onClick={() => setLang(l)}>{names[l]}</Chip>)}</div></div></div>
       <h5 class="sh">{t('p.sec.app')}</h5>
       <div class="cells list">
-        <button class="lrow"><span>{t('p.data')}</span><Icon n="right" size={16} /></button>
+        <button class="lrow" onClick={exportData}><span>{t('pr.export')}</span><Icon n="right" size={16} /></button>
+        <button class="lrow" onClick={deleteAccount}><span style={{ color: 'var(--tg-destructive)' }}>{t('pr.delete')}</span><Icon n="right" size={16} /></button>
         <button class="lrow"><span>{t('p.privacy')}</span><Icon n="right" size={16} /></button>
         {inTelegram() && <button class="lrow" onClick={addToHomeScreen}><span>{t('p.home')}</span><Icon n="right" size={16} /></button>}
       </div>

@@ -3,8 +3,9 @@ import { lazy, Suspense } from 'preact/compat';
 import { C, type Ctx, type Route, type Sheet as SheetT, type Wishlist } from './ctx';
 import { fromTelegram, tr, type Lang } from './i18n';
 import { EMPTY_FILTERS, type Filters } from './data/types';
-import { bindBack, inTelegram, parseStart, startParam, webApp } from './tg';
-import { live, read } from './api';
+import { bindBack, confirmNative, inTelegram, parseStart, startParam, webApp } from './tg';
+import { errText } from './err';
+import { live, read, write } from './api';
 import { dataVersion, ensureListing, loadListings, onData, state as dataState } from './data/store';
 import { loadFromCloud, loadLists, persist } from './wishlists';
 import { setHeader } from './theme';
@@ -14,6 +15,7 @@ import { Favs, Profile, WishlistPage } from './screens/Lists';
 import { Messages, ThreadPage } from './screens/Threads';
 import { ContactSheet, SaveSearchSheet, SearchesPage } from './screens/Searches';
 import { MinePage } from './screens/Mine';
+import { AgencyPage, CrmPage } from './screens/Agency';
 import { FiltersSheet } from './screens/Filters';
 import { Gallery, Report, SaveSheet } from './screens/Overlays';
 import { TabBar, Toast, Skeleton } from './ui/bits';
@@ -21,6 +23,7 @@ import { TabBar, Toast, Skeleton } from './ui/bits';
 const Wizard = lazy(() => import('./screens/Wizard'));
 const Search = lazy(() => import('./screens/Search'));
 const Mod = lazy(() => import('./screens/Mod'));
+const Admin = lazy(() => import('./screens/Admin'));
 
 const qs = new URLSearchParams(location.search);
 const initialLang = (): Lang => {
@@ -44,6 +47,9 @@ export function App() {
     if (qs.get('route') === 'mine') return [{ t: 'mine' }];
     if (qs.get('route') === 'searches') return [{ t: 'searches' }];
     if (qs.get('route') === 'mod') return [{ t: 'mod' }];
+    if (qs.get('route') === 'admin') return [{ t: 'admin' }];
+    if (qs.get('route') === 'agency') return [{ t: 'agency' }];
+    if (qs.get('route') === 'crm') return [{ t: 'crm' }];
     const th = Number(qs.get('thread'));
     if (th) return [{ t: 'thread', id: th }];
     return open ? [{ t: 'detail', id: open }] : q ? [{ t: 'detail', id: q }] : w ? [{ t: 'wizard', step: w }] : s ? [{ t: 'search', step: s }] : l ? [{ t: 'list', id: l }] : [];
@@ -54,13 +60,22 @@ export function App() {
   const [msg, setMsg] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
   const [dataVer, setDataVer] = useState(dataVersion());
-  const [role, setRole] = useState<'user' | 'moderator' | 'owner'>(qs.get('role') === 'mod' ? 'moderator' : 'user');
+  const [role, setRole] = useState<'user' | 'moderator' | 'admin' | 'owner'>(qs.get('role') === 'mod' ? 'moderator' : 'user');
   const [unread, setUnread] = useState(0);
   const [mineVer, setMineVer] = useState(0);
   const bumpMine = useCallback(() => setMineVer((v) => v + 1), []);
   useEffect(() => onData(() => setDataVer(dataVersion())), []);
   useEffect(() => { void loadListings(); }, []);
-  useEffect(() => { if (live()) void read<{ me: { role: 'user' | 'moderator' | 'owner' } }>('bootstrap').then((b) => setRole(b.me.role)).catch(() => {}); }, []);
+  // an invite link (startapp=a_<code>): ask, join the agency team, open the workspace
+  useEffect(() => {
+    const code = parseStart(startParam() ?? qs.get('start')).agency;
+    if (!code) return;
+    void (async () => {
+      if (!(await confirmNative(tr(lang, 'ag.join.confirm'), true))) return;
+      try { await write('agency/join', { code }); toast(tr(lang, 'ag.joined')); setStack([{ t: 'agency' }]); } catch (e) { toast(errText((k, p) => tr(lang, k, p), e)); }
+    })();
+  }, []);
+  useEffect(() => { if (live()) void read<{ me: { role: 'user' | 'moderator' | 'admin' | 'owner' } }>('bootstrap').then((b) => setRole(b.me.role)).catch(() => {}); }, []);
   const refreshInbox = useCallback(() => { void read<{ unread: number }>('threads/inbox').then((r) => setUnread(r.unread)).catch(() => {}); }, []);
   useEffect(() => {
     refreshInbox();
@@ -129,6 +144,9 @@ export function App() {
         {top?.t === 'thread' && <section class={pageCls}>{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}<ThreadPage id={top.id} key={top.id} /></section>}
         {top?.t === 'searches' && <section class={pageCls}>{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}<SearchesPage /></section>}
         {top?.t === 'mod' && <section class={pageCls}>{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}<Suspense fallback={<div class="scroll"><Skeleton /></div>}><Mod /></Suspense></section>}
+        {top?.t === 'agency' && <section class={pageCls}>{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}<AgencyPage /></section>}
+        {top?.t === 'crm' && <section class={pageCls}>{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}<CrmPage /></section>}
+        {top?.t === 'admin' && <section class={pageCls}>{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}<Suspense fallback={<div class="scroll"><Skeleton /></div>}><Admin /></Suspense></section>}
         {sheet === 'filters' && <FiltersSheet />}
         {typeof sheet === 'object' && sheet && 'contact' in sheet && <ContactSheet id={sheet.contact} />}
         {typeof sheet === 'object' && sheet && 'savesearch' in sheet && <SaveSearchSheet />}
