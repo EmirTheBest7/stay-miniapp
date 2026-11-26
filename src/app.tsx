@@ -68,7 +68,7 @@ export function App() {
   useEffect(() => bindBack(sheet || stack.length ? back : null), [back, sheet, stack.length]);
   useEffect(() => { if (tab === 'host' && !stack.length) { setStack([{ t: 'wizard', step: 1 }]); setTab('explore'); } }, [tab, stack.length]);
 
-  const ctx: Ctx = useMemo(() => ({ lang, setLang, lists, saved, toggleInList, createList, deleteList, filters, setFilters, open, toast, push, back, sheet, setSheet }), [lang, lists, filters, sheet, open, toast, push, back, setLang, saved, toggleInList, createList, deleteList]);
+  const ctx: Ctx = useMemo(() => ({ lang, setLang, lists, saved, toggleInList, createList, deleteList, filters, setFilters, open, toast, push, back, goTab: setTab, sheet, setSheet }), [lang, lists, filters, sheet, open, toast, push, back, setTab, setLang, saved, toggleInList, createList, deleteList]);
   const top = stack[stack.length - 1];
   useEffect(() => { setHeader(!top ? (tab === 'explore' ? 'bg_color' : 'secondary_bg_color') : top.t === 'detail' ? 'bg_color' : 'secondary_bg_color'); }, [tab, top?.t]);
   const favCount = lists.reduce((n, l) => n + l.ids.length, 0);

@@ -34,7 +34,7 @@ export function installFakeTelegram(kind: string, scheme: 'light' | 'dark'): voi
   const phone = kind !== 'desktop';
   (window as unknown as { Telegram: unknown }).Telegram = {
     WebApp: {
-      initData: 'fake', initDataUnsafe: { user: { id: 1, first_name: 'Demo', language_code: 'ru' } }, version: '9.0', platform: phone ? 'ios' : 'tdesktop',
+      initData: 'fake', initDataUnsafe: { user: { id: 1, first_name: 'Anna', last_name: 'Nováková', username: 'anna_demo', language_code: 'ru', is_premium: true } }, version: '9.0', platform: phone ? 'ios' : 'tdesktop',
       colorScheme: scheme, themeParams: { ...(scheme === 'dark' ? DARK : LIGHT) }, isExpanded: true, viewportStableHeight: 800, isFullscreen: phone,
       safeAreaInset: phone ? { top: 47, bottom: 34, left: 0, right: 0 } : { top: 0, bottom: 0, left: 0, right: 0 },
       contentSafeAreaInset: phone ? { top: 44, bottom: 0, left: 0, right: 0 } : { top: 0, bottom: 0, left: 0, right: 0 },

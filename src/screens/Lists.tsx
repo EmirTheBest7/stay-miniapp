@@ -1,7 +1,7 @@
 import { LISTINGS } from '../data/mock';
 import { LANGS, type Lang } from '../i18n';
 import { useCtx, useT, type Wishlist } from '../ctx';
-import { addToHomeScreen, confirmNative, inTelegram } from '../tg';
+import { addToHomeScreen, confirmNative, inTelegram, tgUser } from '../tg';
 import { photo } from '../data/photos';
 import { Card } from '../ui/Card';
 import { Chip, Empty } from '../ui/bits';
@@ -60,19 +60,40 @@ export function Messages() {
 }
 
 export function Profile() {
-  const { lang, setLang } = useCtx();
+  const { lang, setLang, lists, goTab } = useCtx();
   const t = useT();
+  const u = tgUser();
   const names: Record<Lang, string> = { ru: 'Русский', cs: 'Čeština', en: 'English', uk: 'Українська' };
+  const savedN = lists.reduce((n, l) => n + l.ids.length, 0);
   return (
     <div class="scroll">
       <h1 class="pg">{t('p.title')}</h1>
-      <section class="grp"><h4>{t('p.lang')}</h4><div class="chips wrap">{LANGS.map((l) => <Chip key={l} on={l === lang} onClick={() => setLang(l)}>{names[l]}</Chip>)}</div></section>
-      <section class="grp list">
-        <button class="lrow"><span>{t('wl.lists')}</span><Icon n="right" size={18} /></button>
-        <button class="lrow"><span>{t('p.data')}</span><Icon n="right" size={18} /></button>
-        <button class="lrow"><span>{t('p.privacy')}</span><Icon n="right" size={18} /></button>
-        {inTelegram() && <button class="lrow" onClick={addToHomeScreen}><span>{t('p.home')}</span><Icon n="right" size={18} /></button>}
-      </section>
+      {u && (
+        <div class="cells prof">
+          <div class="hostcell">
+            {u.photo ? <img class="avatar img" src={u.photo} alt="" width={64} height={64} referrerpolicy="no-referrer" /> : <div class="avatar">{u.initial}</div>}
+            <div>
+              <b class="pname">{u.name}</b>
+              <div class="hint">{u.username ? '@' + u.username : t('p.account')}</div>
+              {u.premium && <div class="ok"><Icon n="star" size={14} /> {t('p.premium')}</div>}
+            </div>
+          </div>
+        </div>
+      )}
+      <h5 class="sh">{t('p.sec.you')}</h5>
+      <div class="cells list">
+        <button class="lrow" onClick={() => goTab('favs')}><span><Icon n="star" size={18} /> {t('fav.title')}</span><span class="hint">{t('p.saved')}: {savedN} · {t('p.lists')}: {lists.length}<Icon n="right" size={16} /></span></button>
+        <button class="lrow" onClick={() => goTab('host')}><span><Icon n="home" size={18} /> {t('p.mylistings')}</span><span class="hint">0<Icon n="right" size={16} /></span></button>
+        <button class="lrow" onClick={() => goTab('msgs')}><span><Icon n="chat" size={18} /> {t('m.title')}</span><Icon n="right" size={16} /></button>
+      </div>
+      <h5 class="sh">{t('p.lang')}</h5>
+      <div class="cells"><div><div class="chips wrap">{LANGS.map((l) => <Chip key={l} on={l === lang} onClick={() => setLang(l)}>{names[l]}</Chip>)}</div></div></div>
+      <h5 class="sh">{t('p.sec.app')}</h5>
+      <div class="cells list">
+        <button class="lrow"><span>{t('p.data')}</span><Icon n="right" size={16} /></button>
+        <button class="lrow"><span>{t('p.privacy')}</span><Icon n="right" size={16} /></button>
+        {inTelegram() && <button class="lrow" onClick={addToHomeScreen}><span>{t('p.home')}</span><Icon n="right" size={16} /></button>}
+      </div>
       <p class="hint center">{t('proto')} · {__BUILD_ID__.slice(0, 7)}</p>
     </div>
   );

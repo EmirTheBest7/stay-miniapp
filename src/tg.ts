@@ -14,7 +14,7 @@ interface Btn {
 }
 export interface WebApp {
   initData: string;
-  initDataUnsafe: { user?: { id: number; first_name?: string; last_name?: string; username?: string; language_code?: string }; start_param?: string };
+  initDataUnsafe: { user?: { id: number; first_name?: string; last_name?: string; username?: string; language_code?: string; photo_url?: string; is_premium?: boolean }; start_param?: string };
   version: string; platform: string; colorScheme: 'light' | 'dark'; themeParams: ThemeParams;
   isExpanded: boolean; viewportStableHeight: number;
   safeAreaInset?: { top: number; bottom: number; left: number; right: number };
@@ -154,3 +154,12 @@ export const cloud = {
     if (c && atLeast('6.9') && value.length <= 4096) { try { c.setItem(key, value); } catch { /* ignore */ } }
   },
 };
+
+export interface TgUser { name: string; username: string | null; photo: string | null; premium: boolean; initial: string }
+/** The signed-in Telegram user for display only (the server trusts initData, never this). The numeric id is not exposed. */
+export function tgUser(): TgUser | null {
+  const u = webApp()?.initDataUnsafe.user;
+  if (!u) return null;
+  const name = [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.username || 'Telegram';
+  return { name, username: u.username ?? null, photo: u.photo_url ?? null, premium: !!u.is_premium, initial: name.slice(0, 1).toUpperCase() };
+}

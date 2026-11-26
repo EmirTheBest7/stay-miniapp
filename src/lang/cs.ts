@@ -161,4 +161,11 @@ export default {
   "wl.lists": "Moje seznamy",
   "wl.delete.confirm": "Smazat seznam „{name}“? Uložené nabídky zůstanou ve vyhledávání.",
   "w.back": "Zpět",
+  "p.account": "Účet Telegram",
+  "p.premium": "Premium",
+  "p.mylistings": "Moje nabídky",
+  "p.saved": "Uloženo",
+  "p.lists": "Seznamů",
+  "p.sec.you": "Vy",
+  "p.sec.app": "Aplikace",
 } as const;

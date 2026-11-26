@@ -292,3 +292,9 @@ body.has-main .app { padding-bottom: calc(52px + 34px); } body.has-sec .app { pa
   .map-city { right: 436px; }
   .home.mapmode .top > .pill { margin-right: 436px; }
 }
+
+/* profile */
+.prof > * { padding: 16px; }
+.pname { font-size: 20px; }
+.avatar.img { object-fit: cover; width: 64px; height: 64px; }
+.cells.list { padding: 0; } .cells.list > .lrow { padding: 14px 16px; } .lrow > span { display: inline-flex; align-items: center; gap: 10px; } .lrow .hint { gap: 6px; font-size: 14px; }

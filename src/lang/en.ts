@@ -161,4 +161,11 @@ export default {
   "wl.lists": "My lists",
   "wl.delete.confirm": "Delete the list “{name}”? Saved places stay in search.",
   "w.back": "Back",
+  "p.account": "Telegram account",
+  "p.premium": "Premium",
+  "p.mylistings": "My listings",
+  "p.saved": "Saved",
+  "p.lists": "Lists",
+  "p.sec.you": "You",
+  "p.sec.app": "App",
 } as const;

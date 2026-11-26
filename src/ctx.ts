@@ -21,6 +21,7 @@ export interface Ctx {
   toast(msg: string): void;
   push(r: Route): void;
   back(): void;
+  goTab(t: string): void;
   sheet: Sheet | null;
   setSheet(s: Sheet | null): void;
 }

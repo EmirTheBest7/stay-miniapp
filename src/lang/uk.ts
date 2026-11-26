@@ -161,4 +161,11 @@ export default {
   "wl.lists": "Мої списки",
   "wl.delete.confirm": "Видалити список «{name}»? Збережені об’єкти залишаться в пошуку.",
   "w.back": "Назад",
+  "p.account": "Акаунт Telegram",
+  "p.premium": "Premium",
+  "p.mylistings": "Мої оголошення",
+  "p.saved": "Збережено",
+  "p.lists": "Списків",
+  "p.sec.you": "Ви",
+  "p.sec.app": "Застосунок",
 } as const;
