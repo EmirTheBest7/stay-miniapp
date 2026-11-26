@@ -11,9 +11,9 @@ export function SearchPill({ onClick, onFilters, filtersOn, title, sub }: { onCl
     <div class="pill" role="search">
       <button class="pbody" onClick={onClick} aria-label={title}>
         <Icon n="search" size={20} />
-        <span><b>{title}</b><small>{sub}</small></span>
+        <span><b>{title}</b> <small>· {sub}</small></span>
       </button>
-      <button class="fbtn" onClick={onFilters} aria-label="filters"><Icon n="filter" size={18} />{filtersOn > 0 && <em>{filtersOn}</em>}</button>
+      <button class="fbtn" onClick={onFilters} aria-label="filters"><Icon n="filter" size={20} />{filtersOn > 0 && <em>{filtersOn}</em>}</button>
     </div>
   );
 }

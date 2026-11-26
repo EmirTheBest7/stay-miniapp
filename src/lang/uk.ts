@@ -159,4 +159,6 @@ export default {
   "wl.saved": "Збережено",
   "wl.delete": "Видалити список",
   "wl.lists": "Мої списки",
+  "wl.delete.confirm": "Видалити список «{name}»? Збережені об’єкти залишаться в пошуку.",
+  "w.back": "Назад",
 } as const;

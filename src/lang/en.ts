@@ -159,4 +159,6 @@ export default {
   "wl.saved": "Saved",
   "wl.delete": "Delete list",
   "wl.lists": "My lists",
+  "wl.delete.confirm": "Delete the list “{name}”? Saved places stay in search.",
+  "w.back": "Back",
 } as const;

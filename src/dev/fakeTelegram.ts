@@ -1,13 +1,23 @@
 // PROTOTYPE ONLY: with ?fake=ios the page imitates Telegram's WebApp (fullscreen, safe areas, MainButton, BackButton) so the layout
 // can be reviewed in a normal browser. Never loaded unless the URL asks for it. Real Telegram provides all of this natively.
 type Cb = () => void;
+import { LIGHT, DARK } from '../theme';
+
 export function installFakeTelegram(kind: string, scheme: 'light' | 'dark'): void {
   const ev: Record<string, Cb[]> = {};
   const root = document.createElement('div');
   root.className = 'fake-tg';
-  root.innerHTML = '<div class="fake-top"><span class="fclose">✕ Domovo</span><span class="fback">‹ Back</span><span>⌄ ⋯</span></div><div class="fake-main" hidden></div>';
+  root.innerHTML = '<div class="fake-top"><span class="fclose">✕ Domovo</span><span class="fback">‹ Back</span><span>⌄ ⋯</span></div><div class="fake-sec" hidden></div><div class="fake-main" hidden></div>';
   document.body.appendChild(root);
   const mainEl = root.querySelector('.fake-main') as HTMLElement;
+  const secEl = root.querySelector('.fake-sec') as HTMLElement;
+  let secCb: Cb | null = null;
+  const sec = {
+    text: '', isVisible: false, setText(t: string) { sec.text = t; secEl.textContent = t; return sec; },
+    onClick(cb: Cb) { secCb = cb; secEl.onclick = () => secCb?.(); return sec; }, offClick() { secCb = null; return sec; },
+    show() { secEl.hidden = false; document.body.classList.add('has-sec'); return sec; }, hide() { secEl.hidden = true; document.body.classList.remove('has-sec'); return sec; },
+    setParams() { return sec; },
+  };
   let mainCb: Cb | null = null;
   let backCb: Cb | null = null;
   const main = {
@@ -25,12 +35,13 @@ export function installFakeTelegram(kind: string, scheme: 'light' | 'dark'): voi
   (window as unknown as { Telegram: unknown }).Telegram = {
     WebApp: {
       initData: 'fake', initDataUnsafe: { user: { id: 1, first_name: 'Demo', language_code: 'ru' } }, version: '9.0', platform: phone ? 'ios' : 'tdesktop',
-      colorScheme: scheme, themeParams: {}, isExpanded: true, viewportStableHeight: 800, isFullscreen: phone,
+      colorScheme: scheme, themeParams: { ...(scheme === 'dark' ? DARK : LIGHT) }, isExpanded: true, viewportStableHeight: 800, isFullscreen: phone,
       safeAreaInset: phone ? { top: 47, bottom: 34, left: 0, right: 0 } : { top: 0, bottom: 0, left: 0, right: 0 },
       contentSafeAreaInset: phone ? { top: 44, bottom: 0, left: 0, right: 0 } : { top: 0, bottom: 0, left: 0, right: 0 },
       ready() {}, expand() {}, close() {}, isVersionAtLeast: () => true, setHeaderColor() {}, setBackgroundColor() {}, setBottomBarColor() {},
       disableVerticalSwipes() {}, onEvent(e: string, cb: Cb) { (ev[e] ??= []).push(cb); }, offEvent() {},
-      BackButton: back, MainButton: main, HapticFeedback: { impactOccurred() {}, notificationOccurred() {}, selectionChanged() {} },
+      BackButton: back, MainButton: main, SecondaryButton: sec,
+      CloudStorage: { setItem(k: string, v: string, cb?: (e: string | null, ok?: boolean) => void) { try { localStorage.setItem('cloud:' + k, v); cb?.(null, true); } catch { cb?.('x'); } }, getItem(k: string, cb: (e: string | null, v?: string) => void) { try { cb(null, localStorage.getItem('cloud:' + k) ?? ''); } catch { cb('x'); } } }, HapticFeedback: { impactOccurred() {}, notificationOccurred() {}, selectionChanged() {} },
       requestFullscreen() {}, openTelegramLink() {}, addToHomeScreen() {},
     },
   };

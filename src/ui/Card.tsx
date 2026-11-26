@@ -28,7 +28,7 @@ export function Card({ l, eager }: { l: Listing; eager?: boolean }) {
       <div class="photo">
         <Carousel seed={l.seed} count={l.photos} eager={eager} onTap={() => open(l.id)} />
         <button class={'heart' + (fav ? ' on' : '')} aria-label="♥" aria-pressed={fav} onClick={(e) => { e.stopPropagation(); haptic.tap(); setSheet({ save: l.id }); }}>
-          <Icon n="heart" size={24} />
+          <Icon n="star" size={20} />
         </button>
         <Badge l={l} />
       </div>
@@ -37,6 +37,25 @@ export function Card({ l, eager }: { l: Listing; eager?: boolean }) {
         <div class="row2 hint">{dispoLabel(lang, l.dispo)} · {t('d.area', { n: l.area })} · <HostLabel l={l} /></div>
         <div class="price"><b>{t('kc', { n: num(l.rent) })}</b> <span>{t('d.month')}</span>{l.feesIncluded ? <span class="hint"> · {t('d.feesIn')}</span> : l.fees ? <span class="hint"> · {t('d.fees', { n: num(l.fees) })}</span> : null}</div>
       </div>
+    </article>
+  );
+}
+
+/** Rail card (home): near-square photo, three text lines. */
+export function RailCard({ l }: { l: Listing }) {
+  const { saved, setSheet, open, lang } = useCtx();
+  const t = useT();
+  const fav = saved(l.id);
+  return (
+    <article class="rcard" onClick={() => open(l.id)}>
+      <div class="photo">
+        <Carousel seed={l.seed} count={Math.min(l.photos, 3)} onTap={() => open(l.id)} />
+        <button class={'heart' + (fav ? ' on' : '')} aria-label="★" aria-pressed={fav} onClick={(e) => { e.stopPropagation(); haptic.tap(); setSheet({ save: l.id }); }}><Icon n="star" size={18} /></button>
+        <Badge l={l} />
+      </div>
+      <div class="t">{l.district}, {t(('city.' + l.city) as 'city.prague')}</div>
+      <div class="s">{dispoLabel(lang, l.dispo)} · {t('d.area', { n: l.area })}</div>
+      <div class="p">{t('kc', { n: num(l.rent) })} <span>{t('d.month')}</span></div>
     </article>
   );
 }

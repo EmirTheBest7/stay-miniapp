@@ -23,9 +23,6 @@ export function themeVars(params: ThemeParams, scheme: 'light' | 'dark'): Record
     '--tg-hint': p('hint_color'),
     '--tg-link': p('link_color'),
     '--tg-button': p('button_color'),
-    // our own single accent (teal), independent of Telegram's blue/violet; text on it is always readable
-    '--accent': scheme === 'dark' ? '#3cc4ae' : '#0c7467',
-    '--on-accent': scheme === 'dark' ? '#06231e' : '#ffffff',
     '--tg-button-text': p('button_text_color'),
     '--tg-secondary-bg': secondary,
     '--tg-section-bg': p('section_bg_color'),
@@ -35,6 +32,7 @@ export function themeVars(params: ThemeParams, scheme: 'light' | 'dark'): Record
     '--tg-subtitle': p('subtitle_text_color'),
     '--tg-section-header': p('section_header_text_color'),
     '--tg-bottom-bar': p('bottom_bar_bg_color'),
+    '--tg-header': (params as Record<string, string | undefined>)['header_bg_color'] || secondary,
   };
 }
 
@@ -57,7 +55,7 @@ export function applyTheme(): void {
   root.style.setProperty('--safe-left', sum('left'));
   root.style.setProperty('--safe-right', sum('right'));
   // Blend into Telegram's own chrome (each call is a no-op on clients that do not know it).
-  try { w?.setHeaderColor('secondary_bg_color'); w?.setBackgroundColor('secondary_bg_color'); w?.setBottomBarColor?.(vars['--tg-bottom-bar'] as string); } catch { /* old client */ }
+  try { w?.setHeaderColor('secondary_bg_color'); w?.setBackgroundColor('secondary_bg_color'); w?.setBottomBarColor?.('bottom_bar_bg_color'); } catch { /* old client */ }
 }
 
 export function watchTheme(): () => void {

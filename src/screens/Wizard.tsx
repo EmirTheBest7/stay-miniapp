@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { useCtx, useT } from '../ctx';
 import { photo } from '../data/photos';
-import { bindMain, haptic, inTelegram } from '../tg';
+import { bindMain, bindSecondary, haptic, inTelegram } from '../tg';
 import { Icon } from '../ui/icons';
 import { Chip } from '../ui/bits';
 
@@ -28,6 +28,8 @@ export default function Wizard({ step: s0 }: { step: number }) {
   const [kind, setKind] = useState('flat');
   const next = () => { haptic.tap(); step < STEPS ? setStep(step + 1) : toast(t('w.autosave')); };
   useEffect(() => bindMain({ text: step === STEPS ? t('r.send') : t('w.next'), onClick: next, enabled: step !== 5 || photos.length > 0 }), [step, photos.length, lang]);
+  // Telegram's own SecondaryButton for "Back" beside the MainButton (no-op on clients older than Bot API 7.10)
+  useEffect(() => bindSecondary(step > 1 ? { text: t('w.back'), onClick: () => setStep(step - 1) } : null), [step, lang]);
   const move = (i: number, d: number) => { const p = [...photos]; const j = i + d; if (j < 0 || j >= p.length) return; [p[i], p[j]] = [p[j]!, p[i]!]; setPhotos(p); if (cover === i) setCover(j); else if (cover === j) setCover(i); haptic.select(); };
   const lbl = names[lang] ?? names.en!;
   return (

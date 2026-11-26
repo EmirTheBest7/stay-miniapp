@@ -9,7 +9,7 @@ export interface ThemeParams {
 interface Btn {
   text: string; isVisible: boolean; isActive: boolean; isProgressVisible: boolean;
   setText(t: string): Btn; onClick(cb: () => void): Btn; offClick(cb: () => void): Btn;
-  setParams?(p: { text?: string; color?: string; text_color?: string; is_active?: boolean; is_visible?: boolean }): Btn;
+  position?: string; setParams?(p: { text?: string; position?: 'left' | 'right' | 'top' | 'bottom'; is_active?: boolean; is_visible?: boolean }): Btn;
   show(): Btn; hide(): Btn; enable(): Btn; disable(): Btn; showProgress(leave?: boolean): Btn; hideProgress(): Btn;
 }
 export interface WebApp {
@@ -27,6 +27,7 @@ export interface WebApp {
   onEvent(e: string, cb: () => void): void; offEvent(e: string, cb: () => void): void;
   BackButton: { isVisible: boolean; show(): void; hide(): void; onClick(cb: () => void): void; offClick(cb: () => void): void };
   MainButton: Btn; SecondaryButton?: Btn;
+  CloudStorage?: { setItem(k: string, v: string, cb?: (err: string | null, ok?: boolean) => void): void; getItem(k: string, cb: (err: string | null, v?: string) => void): void };
   HapticFeedback?: { impactOccurred(s: string): void; notificationOccurred(t: 'error' | 'success' | 'warning'): void; selectionChanged(): void };
   showPopup?(p: { title?: string; message: string; buttons?: { id?: string; type?: string; text?: string }[] }, cb?: (id?: string) => void): void;
   showConfirm?(m: string, cb: (ok: boolean) => void): void;
@@ -75,19 +76,16 @@ export function bindMain(opts: { text: string; onClick: () => void; enabled?: bo
   const m = webApp()?.MainButton;
   if (!m || !opts) { m?.hide(); return () => {}; }
   m.setText(opts.text);
-  // our accent on Telegram's native button (setParams exists from Bot API 7.10; older clients keep their own colour)
-  const cs = getComputedStyle(document.documentElement);
-  try { m.setParams?.({ color: cs.getPropertyValue('--accent').trim() || undefined, text_color: cs.getPropertyValue('--on-accent').trim() || undefined }); } catch { /* old client */ }
   opts.enabled === false ? m.disable() : m.enable();
   opts.busy ? m.showProgress(false) : m.hideProgress();
   m.onClick(opts.onClick); m.show();
   return () => { m.offClick(opts.onClick); m.hideProgress(); m.hide(); };
 }
 
-/** Native confirm if available; otherwise resolves false (never a window.confirm: it blocks the webview). */
-export function confirmNative(message: string): Promise<boolean> {
+/** Native confirm (Telegram's own dialog). Outside Telegram (the browser prototype) it resolves `fallback`; never a window.confirm, which blocks the webview. */
+export function confirmNative(message: string, fallback = false): Promise<boolean> {
   const w = webApp();
-  if (!w?.showConfirm) return Promise.resolve(false);
+  if (!w?.showConfirm) return Promise.resolve(fallback);
   return new Promise((res) => w.showConfirm!(message, (ok) => res(!!ok)));
 }
 
@@ -130,3 +128,29 @@ export function parseStart(p: string | null): { listing?: number } {
 }
 
 export function addToHomeScreen(): void { const w = webApp(); if (w?.addToHomeScreen && atLeast('8.0')) w.addToHomeScreen(); }
+
+/** Native SecondaryButton (Bot API 7.10+), e.g. "Back" beside the MainButton. Returns an unbind function; a no-op on older clients. */
+export function bindSecondary(opts: { text: string; onClick: () => void; position?: 'left' | 'top' } | null): () => void {
+  const b = webApp()?.SecondaryButton;
+  if (!b || !opts) { b?.hide(); return () => {}; }
+  b.setText(opts.text);
+  try { b.setParams?.({ position: opts.position ?? 'left' }); } catch { /* old client */ }
+  b.onClick(opts.onClick); b.show();
+  return () => { b.offClick(opts.onClick); b.hide(); };
+}
+
+/** True when the native SecondaryButton exists, so screens can drop their own "Back" button. */
+export const hasSecondary = (): boolean => !!webApp()?.SecondaryButton && atLeast('7.10');
+
+/** Telegram CloudStorage (syncs across the user's devices, Bot API 6.9+). Resolves null when unavailable. */
+export const cloud = {
+  get(key: string): Promise<string | null> {
+    const c = webApp()?.CloudStorage;
+    if (!c || !atLeast('6.9')) return Promise.resolve(null);
+    return new Promise((res) => { try { c.getItem(key, (e, v) => res(e || !v ? null : v)); } catch { res(null); } });
+  },
+  set(key: string, value: string): void {
+    const c = webApp()?.CloudStorage;
+    if (c && atLeast('6.9') && value.length <= 4096) { try { c.setItem(key, value); } catch { /* ignore */ } }
+  },
+};

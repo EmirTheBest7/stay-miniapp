@@ -1,7 +1,7 @@
 import { LISTINGS } from '../data/mock';
 import { LANGS, type Lang } from '../i18n';
 import { useCtx, useT, type Wishlist } from '../ctx';
-import { addToHomeScreen, inTelegram } from '../tg';
+import { addToHomeScreen, confirmNative, inTelegram } from '../tg';
 import { photo } from '../data/photos';
 import { Card } from '../ui/Card';
 import { Chip, Empty } from '../ui/bits';
@@ -49,7 +49,7 @@ export function WishlistPage({ id }: { id: string }) {
     <div class="scroll">
       <div class="wl-head"><h1 class="pg">{listName(l, t('wl.default'))}</h1></div>
       {items.length === 0 ? <Empty title={t('fav.empty')} sub={t('fav.empty.sub')} icon="heart" /> : items.map((x) => <Card key={x.id} l={x} eager />)}
-      <button class="btn ghost danger wide" onClick={() => { haptic.warn(); deleteList(id); back(); }}>{t('wl.delete')}</button>
+      <button class="btn ghost danger wide" onClick={async () => { haptic.warn(); if (await confirmNative(t('wl.delete.confirm', { name: listName(l, t('wl.default')) }), true)) { deleteList(id); back(); } }}>{t('wl.delete')}</button>
     </div>
   );
 }

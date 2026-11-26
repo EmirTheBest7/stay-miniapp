@@ -5,7 +5,7 @@ import { run } from '../data/filter';
 import { DISPOS, type CityId, type Filters } from '../data/types';
 import { useCtx, useT } from '../ctx';
 import { dispoLabel, num } from '../i18n';
-import { bindMain, haptic, inTelegram } from '../tg';
+import { bindMain, bindSecondary, haptic, inTelegram } from '../tg';
 import { Chip } from '../ui/bits';
 
 const toNum = (s: string): number | null => { const n = Number(s.replace(/\D/g, '')); return s.trim() === '' || !Number.isFinite(n) ? null : n; };
@@ -22,6 +22,7 @@ export default function Search({ step: s0, onClose }: { step: number; onClose():
   const next = () => { if (last) { haptic.success(); setFilters(f); onClose(); } else { haptic.tap(); setStep(step + 1); } };
   const label = last ? t('f.show', { n: count }) : t('w.next');
   useEffect(() => bindMain({ text: label, onClick: next }), [step, count, lang, f]);
+  useEffect(() => bindSecondary(step > 1 ? { text: t('w.back'), onClick: () => setStep(step - 1) } : null), [step, lang]);
   const city = f.city === 'all' ? null : (f.city as CityId);
   const quick: [number | null, number | null][] = [[null, 15000], [15000, 25000], [25000, 40000], [40000, null]];
   return (

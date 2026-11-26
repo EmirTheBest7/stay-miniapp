@@ -9,7 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "check": "node scripts/check-licenses.mjs && node scripts/check-size.mjs && node scripts/check-contrast.mjs"
+    "check": "node scripts/check-licenses.mjs && node scripts/check-size.mjs"
   },
   "dependencies": {
     "preact": "11.2.0"

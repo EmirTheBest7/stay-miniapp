@@ -4,7 +4,7 @@ import { C, type Ctx, type Route, type Sheet as SheetT, type Wishlist } from './
 import { fromTelegram, type Lang } from './i18n';
 import { EMPTY_FILTERS, type Filters } from './data/types';
 import { bindBack, inTelegram, parseStart, startParam, webApp } from './tg';
-import { loadLists, persist } from './wishlists';
+import { loadFromCloud, loadLists, persist } from './wishlists';
 import { Home } from './screens/Home';
 import { Detail } from './screens/Detail';
 import { Favs, Messages, Profile, WishlistPage } from './screens/Lists';
@@ -41,6 +41,8 @@ export function App() {
   const [closing, setClosing] = useState(false);
 
   useEffect(() => { if (qs.get('seed') !== '1') persist(lists); }, [lists]);
+  // wishlists follow the user across Telegram devices (CloudStorage); a device with nothing saved yet adopts the cloud copy
+  useEffect(() => { if (qs.get('seed') === '1') return; void loadFromCloud().then((c) => { if (c && c.length) setLists((cur) => (cur.length ? cur : c)); }); }, []);
   const setLang = useCallback((l: Lang) => { setLangState(l); try { localStorage.setItem('lang', l); } catch { /* ignore */ } }, []);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   const toast = useCallback((m: string) => { setMsg(m); setTimeout(() => setMsg(null), 1800); }, []);

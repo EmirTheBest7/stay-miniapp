@@ -159,4 +159,6 @@ export default {
   "wl.saved": "Uloženo",
   "wl.delete": "Smazat seznam",
   "wl.lists": "Moje seznamy",
+  "wl.delete.confirm": "Smazat seznam „{name}“? Uložené nabídky zůstanou ve vyhledávání.",
+  "w.back": "Zpět",
 } as const;
