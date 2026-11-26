@@ -56,7 +56,7 @@ export function WishlistPage({ id }: { id: string }) {
 
 export function Messages() {
   const t = useT();
-  return <div class="scroll"><h1 class="pg">{t('m.title')}</h1><Empty title={t('m.empty')} sub={t('m.empty.sub')} icon="chat" /></div>;
+  return <div class="scroll"><div class="narrow"><h1 class="pg">{t('m.title')}</h1><Empty title={t('m.empty')} sub={t('m.empty.sub')} icon="chat" /></div></div>;
 }
 
 export function Profile() {
@@ -66,7 +66,7 @@ export function Profile() {
   const names: Record<Lang, string> = { ru: 'Русский', cs: 'Čeština', en: 'English', uk: 'Українська' };
   const savedN = lists.reduce((n, l) => n + l.ids.length, 0);
   return (
-    <div class="scroll">
+    <div class="scroll"><div class="narrow">
       <h1 class="pg">{t('p.title')}</h1>
       {u && (
         <div class="cells prof">
@@ -95,6 +95,6 @@ export function Profile() {
         {inTelegram() && <button class="lrow" onClick={addToHomeScreen}><span>{t('p.home')}</span><Icon n="right" size={16} /></button>}
       </div>
       <p class="hint center">{t('proto')} · {__BUILD_ID__.slice(0, 7)}</p>
-    </div>
+    </div></div>
   );
 }
