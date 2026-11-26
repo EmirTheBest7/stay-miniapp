@@ -3,7 +3,7 @@ import { lazy, Suspense } from 'preact/compat';
 import { C, type Ctx, type Route, type Sheet as SheetT } from './ctx';
 import { fromTelegram, type Lang } from './i18n';
 import { EMPTY_FILTERS, type Filters } from './data/types';
-import { bindBack, parseStart, startParam, webApp } from './tg';
+import { bindBack, inTelegram, parseStart, startParam, webApp } from './tg';
 import { Home } from './screens/Home';
 import { Detail } from './screens/Detail';
 import { Favs, Messages, Profile } from './screens/Lists';
@@ -61,9 +61,9 @@ export function App() {
           {tab === 'me' && <Profile />}
         </main>
         {!top && <TabBar tab={tab} setTab={setTab} favCount={favs.length} />}
-        {top?.t === 'detail' && <section class="page"><button class="backbtn" aria-label="‹" onClick={back}>‹</button><Detail id={top.id} key={top.id} /></section>}
+        {top?.t === 'detail' && <section class="page">{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}<Detail id={top.id} key={top.id} /></section>}
         {top?.t === 'wizard' && (
-          <section class="page"><button class="backbtn" aria-label="‹" onClick={back}>‹</button>
+          <section class="page">{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}
             <Suspense fallback={<div class="scroll"><Skeleton /></div>}><Wizard step={top.step} key="wz" /></Suspense>
           </section>
         )}

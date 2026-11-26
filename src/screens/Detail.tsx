@@ -51,7 +51,7 @@ export function Detail({ id }: { id: number }) {
           <Carousel seed={l.seed} count={l.photos} eager onTap={(idx) => setSheet({ gallery: l.id, idx })} />
           <div class="gal-act">
             <button class="icon round" aria-label={t('d.share')} onClick={share}><Icon n="share" size={20} /></button>
-            <button class={'icon round' + (fav ? ' heart on' : '')} aria-pressed={fav} aria-label="♥" onClick={() => { haptic.tap(); toggleFav(l.id); }}><Icon n="heart" size={20} /></button>
+            <button class={'icon round' + (fav ? ' favon' : '')} aria-pressed={fav} aria-label="♥" onClick={() => { haptic.tap(); toggleFav(l.id); }}><Icon n="heart" size={20} /></button>
           </div>
         </div>
         <div class="dbody">

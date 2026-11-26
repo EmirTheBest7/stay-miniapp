@@ -5,10 +5,11 @@ export function installFakeTelegram(kind: string, scheme: 'light' | 'dark'): voi
   const ev: Record<string, Cb[]> = {};
   const root = document.createElement('div');
   root.className = 'fake-tg';
-  root.innerHTML = '<div class="fake-top"><span>✕ Domovo</span><span>⌄ ⋯</span></div><div class="fake-main" hidden></div>';
+  root.innerHTML = '<div class="fake-top"><span class="fclose">✕ Domovo</span><span class="fback">‹ Back</span><span>⌄ ⋯</span></div><div class="fake-main" hidden></div>';
   document.body.appendChild(root);
   const mainEl = root.querySelector('.fake-main') as HTMLElement;
   let mainCb: Cb | null = null;
+  let backCb: Cb | null = null;
   const main = {
     text: '', isVisible: false, isActive: true, isProgressVisible: false,
     setText(t: string) { main.text = t; mainEl.textContent = t; return main; },
@@ -18,7 +19,8 @@ export function installFakeTelegram(kind: string, scheme: 'light' | 'dark'): voi
     enable() { main.isActive = true; mainEl.classList.remove('off'); return main; }, disable() { main.isActive = false; mainEl.classList.add('off'); return main; },
     showProgress() { return main; }, hideProgress() { return main; },
   };
-  const back = { isVisible: false, show() { back.isVisible = true; root.classList.add('has-back'); }, hide() { back.isVisible = false; root.classList.remove('has-back'); }, onClick(_cb: Cb) { /* the page has its own ‹ in fake mode */ }, offClick(_cb: Cb) { /* noop */ } };
+  const back = { isVisible: false, show() { back.isVisible = true; root.classList.add('has-back'); }, hide() { back.isVisible = false; root.classList.remove('has-back'); }, onClick(cb: Cb) { backCb = cb; }, offClick() { backCb = null; } };
+  root.querySelector('.fback')!.addEventListener('click', () => backCb?.());
   const phone = kind !== 'desktop';
   (window as unknown as { Telegram: unknown }).Telegram = {
     WebApp: {
