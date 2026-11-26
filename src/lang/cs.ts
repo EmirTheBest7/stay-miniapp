@@ -374,4 +374,5 @@ export default {
   "crm.delete": "Smazat klienta",
   "crm.added": "Klient přidán do CRM",
   "crm.fromthread": "Přidat do CRM",
+  "vf.pending": "Firma nalezena v ARES. Moderátor ověří, že ji zastupujete, a odemkne se tým.",
 } as const;

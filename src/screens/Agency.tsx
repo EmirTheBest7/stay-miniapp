@@ -29,7 +29,7 @@ export function AgencyPage() {
   if (!info) return <div class="scroll"><Skeleton /></div>;
   const verify = async (): Promise<void> => {
     setBusy(true);
-    try { const r = await write<{ active: boolean }>('host/verify', {}); toast(r.active ? t('vf.ok') : t('vf.inactive')); haptic.success(); load(); } catch (e) { toast(errText(t, e)); haptic.error(); }
+    try { const r = await write<{ active: boolean }>('host/verify', {}); toast(r.active ? t('vf.pending') : t('vf.inactive')); haptic.success(); load(); } catch (e) { toast(errText(t, e)); haptic.error(); }
     setBusy(false);
   };
   const invite = async (role: 'agent' | 'admin'): Promise<void> => {

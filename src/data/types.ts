@@ -58,7 +58,7 @@ export interface ThreadItem {
   listing: { id: number; title: string; city: string; district: string; rent: number; status: string };
   peer: { label: string | null; shared: boolean }; i_shared: boolean;
   last: { mine: boolean; text: string; at: number } | null;
-  contact?: { name: string; username: string | null; link: string };
+  contact?: { name: string; username: string | null; link: string | null };
   messages?: { mine: boolean; text: string; at: number }[];
 }
 export interface SavedSearch { id: number; name: string; filters: Partial<Filters>; active: boolean }

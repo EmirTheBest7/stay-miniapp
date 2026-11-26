@@ -374,4 +374,5 @@ export default {
   "crm.delete": "Delete client",
   "crm.added": "Client added to the CRM",
   "crm.fromthread": "Add to CRM",
+  "vf.pending": "Company found in ARES. A moderator confirms you represent it, then the team unlocks.",
 } as const;

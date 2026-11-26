@@ -80,7 +80,7 @@ export function ThreadPage({ id }: { id: number }) {
             <div class="cells"><div class="hostcell">
               <div class="avatar">{th.contact.name[0]}</div>
               <div><b>{th.contact.name}</b><div class="hint">{th.contact.username ? '@' + th.contact.username : t('th.contact')}</div></div>
-              <button class="btn ghost" onClick={() => openTelegramLink(th.contact!.link)}>{t('th.openchat')}</button>
+              {th.contact.link && <button class="btn ghost" onClick={() => openTelegramLink(th.contact!.link!)}>{t('th.openchat')}</button>}
             </div></div>
           )}
           <div class="bubbles">
