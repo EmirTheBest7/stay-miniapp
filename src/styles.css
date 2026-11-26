@@ -256,7 +256,7 @@ body.has-main .app { padding-bottom: calc(52px + 34px); } body.has-sec .app { pa
 
 
 /* ===== responsive: phone -> tablet -> desktop (fullscreen on a computer) ===== */
-.top > *, .count, .rail, .pg, .wizard > *, .search > *, .dbody, .wgrid { max-width: 1240px; margin-left: auto; margin-right: auto; width: 100%; }
+.top > *, .count, .pg, .wizard > *, .search > *, .dbody, .wgrid { max-width: 1240px; margin-left: auto; margin-right: auto; width: 100%; }
 .cardrow { max-width: 1240px; margin-left: auto; margin-right: auto; width: 100%; }
 .cats { max-width: 720px; margin-left: auto; margin-right: auto; }
 .top > .pill { max-width: 720px; }
