@@ -375,4 +375,10 @@ export default {
   "crm.added": "Client added to the CRM",
   "crm.fromthread": "Add to CRM",
   "vf.pending": "Company found in ARES. A moderator confirms you represent it, then the team unlocks.",
+  "pay.title": "Listing fee",
+  "pay.price": "Publishing a listing: {n} CZK",
+  "pay.stars": "Pay with Telegram Stars",
+  "pay.consent": "By paying you ask us to publish immediately and acknowledge you lose the 14-day right to withdraw from a digital service. Refunds: /paysupport in the bot.",
+  "pay.agency": "Agency? We invoice you: contact support via /paysupport.",
+  "pay.failed": "The payment did not go through. Please try again.",
 } as const;

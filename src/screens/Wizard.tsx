@@ -12,6 +12,9 @@ import { PhotoError, preparePhoto } from '../photo';
 import { bindMain, bindSecondary, haptic, inTelegram } from '../tg';
 import { ensureWriteAccess } from '../access';
 import { Chip } from '../ui/bits';
+import { lazy, Suspense } from 'preact/compat';
+
+const PaySheet = lazy(() => import('./PaySheet'));
 import { Icon } from '../ui/icons';
 
 const STEPS = 7;
@@ -64,6 +67,7 @@ export default function Wizard({ step: s0, id: id0 }: { step: number; id?: numbe
   const [up, setUp] = useState(0);
   const [done, setDone] = useState(false);
   const [missing, setMissing] = useState<string[]>([]);
+  const [pay, setPay] = useState<{ listingId: number; price: string } | null>(null);
   const file = useRef<HTMLInputElement>(null);
   const snap = useRef<string | null>(null);        // the draft as last saved: an unchanged live listing must not be pulled back to review
   const set = (p: Partial<Draft>): void => setD((x) => ({ ...x, ...p }));
@@ -109,6 +113,7 @@ export default function Wizard({ step: s0, id: id0 }: { step: number; id?: numbe
   };
   const handleSubmitError = (e: ApiErr): void => {
     haptic.error();
+    if (e.code === 'payment_required' && own) { setPay({ listingId: own.id, price: e.message }); return; }
     if (e.code === 'incomplete') { try { setMissing(Object.keys(JSON.parse(e.message))); } catch { setMissing(['?']); } setStep(7); toast(t('wz.incomplete')); }
     else toast(errText(t, e));
   };
@@ -150,6 +155,7 @@ export default function Wizard({ step: s0, id: id0 }: { step: number; id?: numbe
   const numIn = (k: 'area' | 'floor' | 'rent' | 'fees' | 'deposit', ph = '') => <input inputMode={k === 'floor' ? 'text' : 'numeric'} value={d[k]} placeholder={ph} onInput={(e) => set({ [k]: e.currentTarget.value } as Partial<Draft>)} />;
   const toggle = (k: 'pets' | 'smoking' | 'feesIncluded', label: Key) => <button class={'chip' + (d[k] ? ' on' : '')} aria-pressed={d[k]} onClick={() => { haptic.select(); set({ [k]: !d[k] } as Partial<Draft>); }}>{t(label)}</button>;
 
+  const paySheet = pay && <Suspense fallback={null}><PaySheet listingId={pay.listingId} price={pay.price} onClose={() => setPay(null)} onPaid={() => { setPay(null); void next(); }} /></Suspense>;
   if (done) {
     return (
       <div class="wizard"><div class="scroll"><div class="wz-body center">
@@ -247,6 +253,7 @@ export default function Wizard({ step: s0, id: id0 }: { step: number; id?: numbe
           <p class="hint"><Icon n="shield" size={14} /> {t('wz.review.note')}</p>
         </>)}
       </div></div>
+      {paySheet}
       {!inTelegram() && (
         <div class="cta"><button class="btn ghost" onClick={() => setStep(step - 1)} disabled={step === 1} aria-label="‹">‹</button><button class="btn primary grow" disabled={busy || errs.length > 0} onClick={next}>{label}</button></div>
       )}

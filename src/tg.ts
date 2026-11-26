@@ -35,6 +35,7 @@ export interface WebApp {
   openTelegramLink?(url: string): void;
   requestContact?(cb?: (shared: boolean) => void): void;
   requestWriteAccess?(cb?: (allowed: boolean) => void): void;
+  openInvoice?(url: string, cb?: (status: 'paid' | 'cancelled' | 'failed' | 'pending') => void): void;
   shareMessage?(id: string, cb?: (sent: boolean) => void): void;
   addToHomeScreen?(): void;
   isVersionAtLeast(v: string): boolean;
@@ -98,6 +99,13 @@ export function requestWriteAccess(): Promise<boolean> {
   const w = webApp();
   if (!w?.requestWriteAccess || !atLeast('6.9')) return Promise.resolve(true);
   return new Promise((res) => w.requestWriteAccess!((ok) => res(!!ok)));
+}
+
+/** Opens Telegram's own payment sheet for an invoice link (Stars). Resolves the final status. */
+export function openInvoice(url: string): Promise<'paid' | 'cancelled' | 'failed' | 'pending'> {
+  const w = webApp();
+  if (!w?.openInvoice || !atLeast('6.1')) return Promise.resolve('failed');
+  return new Promise((res) => w.openInvoice!(url, (s) => res(s)));
 }
 
 /** Asks Telegram to share the user's phone with the BOT (the bot validates user_id == sender). Resolves true when sent. */

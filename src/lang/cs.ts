@@ -375,4 +375,10 @@ export default {
   "crm.added": "Klient přidán do CRM",
   "crm.fromthread": "Přidat do CRM",
   "vf.pending": "Firma nalezena v ARES. Moderátor ověří, že ji zastupujete, a odemkne se tým.",
+  "pay.title": "Platba za zveřejnění",
+  "pay.price": "Zveřejnění nabídky: {n} Kč",
+  "pay.stars": "Zaplatit v Telegram Stars",
+  "pay.consent": "Zaplacením žádáte o okamžité zveřejnění a souhlasíte, že ztrácíte právo na odstoupení od smlouvy o digitální službě do 14 dnů. Vratky: /paysupport v botovi.",
+  "pay.agency": "Kancelář? Vystavíme fakturu: napište podpoře přes /paysupport.",
+  "pay.failed": "Platba neproběhla. Zkuste to znovu.",
 } as const;
