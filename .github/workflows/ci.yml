@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck, unit tests
+        run: npx tsc --noEmit && npm test
+      - name: Production build + bundle budget (entry <= 60 KB gzip) + licenses
+        run: npm run build && node scripts/check-size.mjs dist/assets && node scripts/check-licenses.mjs
+        env:
+          BUILD_ID: ${{ github.sha }}
