@@ -1,10 +1,10 @@
-import { useEffect } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { LISTINGS, TODAY } from '../data/mock';
 import { useCtx, useT } from '../ctx';
 import { dispoLabel, num } from '../i18n';
 import { bindMain, haptic, inTelegram, listingLink, openTelegramLink } from '../tg';
 import { Carousel } from '../ui/Carousel';
-import { AdBadge } from '../ui/Card';
+import { Badge, HostLabel } from '../ui/Card';
 import { Icon } from '../ui/icons';
 
 /** Approximate-location illustration: a soft circle on a quiet synthetic grid. The exact address never reaches the client. */
@@ -27,7 +27,8 @@ function ApproxMap({ seed }: { seed: number }) {
 }
 
 export function Detail({ id }: { id: number }) {
-  const { lang, favs, toggleFav, setSheet, toast } = useCtx();
+  const { lang, saved, setSheet, toast, back } = useCtx();
+  const [all, setAll] = useState(false);
   const t = useT();
   const l = LISTINGS.find((x) => x.id === id);
   const cta = l ? `${t('d.write')} · ${t('kc', { n: num(l.rent) })}` : '';
@@ -36,8 +37,9 @@ export function Detail({ id }: { id: number }) {
     return bindMain({ text: cta, onClick: () => { haptic.success(); toast(t('d.write')); } });
   }, [id, lang]);
   if (!l) return null;
-  const fav = favs.includes(l.id);
+  const fav = saved(l.id);
   const now = l.availableFrom <= TODAY;
+  const chips = [t(('fur.' + l.furnished) as 'fur.yes'), l.pets ? t('d.pets') : t('d.nopets'), ...l.amenities.map((a) => t(('amen.' + a) as 'amen.lift'))];
   const share = () => {
     const link = listingLink(l.id);
     haptic.tap();
@@ -49,13 +51,17 @@ export function Detail({ id }: { id: number }) {
       <div class="scroll nopad">
         <div class="gal">
           <Carousel seed={l.seed} count={l.photos} eager onTap={(idx) => setSheet({ gallery: l.id, idx })} />
-          <div class="gal-act">
-            <button class="icon round" aria-label={t('d.share')} onClick={share}><Icon n="share" size={20} /></button>
-            <button class={'icon round' + (fav ? ' favon' : '')} aria-pressed={fav} aria-label="♥" onClick={() => { haptic.tap(); toggleFav(l.id); }}><Icon n="heart" size={20} /></button>
+          <div class="gal-shade" />
+          <div class="gal-bar">
+            {!inTelegram() ? <button class="icon round" aria-label="‹" onClick={back}><Icon n="back" size={20} /></button> : <span />}
+            <div class="gal-act">
+              <button class="icon round" aria-label={t('d.share')} onClick={share}><Icon n="share" size={20} /></button>
+              <button class={'icon round' + (fav ? ' favon' : '')} aria-pressed={fav} aria-label="♥" onClick={() => { haptic.tap(); setSheet({ save: l.id }); }}><Icon n="heart" size={20} /></button>
+            </div>
           </div>
         </div>
         <div class="dbody">
-          <AdBadge l={l} />
+          <div class="tags"><Badge l={l} /><span class="hint"><HostLabel l={l} /></span></div>
           <h1>{dispoLabel(lang, l.dispo)} · {t('d.area', { n: l.area })}</h1>
           <p class="hint">{l.district}, {t(('city.' + l.city) as 'city.prague')}</p>
           <div class="facts">
@@ -72,15 +78,16 @@ export function Detail({ id }: { id: number }) {
           </div>
           <h3>{t('d.amen')}</h3>
           <div class="chips wrap static">
-            <span class="chip s">{t('fur.' + l.furnished as 'fur.yes')}</span>
-            <span class="chip s">{l.pets ? t('d.pets') : t('d.nopets')}</span>
-            {l.amenities.map((a) => <span class="chip s" key={a}>{t(('amen.' + a) as 'amen.lift')}</span>)}
+            {chips.slice(0, all ? chips.length : 6).map((c) => <span class="chip s" key={c}>{c}</span>)}
           </div>
+          {chips.length > 6 && <button class="btn ghost wide" onClick={() => { haptic.select(); setAll(!all); }}>{all ? t('d.showless') : t('d.showall', { n: chips.length })}</button>}
           <h3>{t('d.desc')}</h3>
           <p class="desc">{(DESC[lang] ?? DESC.en!)(l.district, l.dispo, l.area)}</p>
           <h3>{t('d.loc')}</h3>
           <ApproxMap seed={l.seed} />
           <p class="hint">{t('d.locnote')}</p>
+          <h3>{t('d.rules')}</h3>
+          <ul class="rules"><li>{t('d.rule.term')}</li><li>{l.pets ? t('d.pets') : t('d.nopets')}</li><li>{t('d.rule.smoke')}</li><li>{t('d.rule.view')}</li></ul>
           <h3>{t('d.host')}</h3>
           <div class="host">
             <div class="avatar">{l.host.name[0]}</div>

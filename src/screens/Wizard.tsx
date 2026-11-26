@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { useCtx, useT } from '../ctx';
-import { photoSvg } from '../data/photos';
+import { photo } from '../data/photos';
 import { bindMain, haptic, inTelegram } from '../tg';
 import { Icon } from '../ui/icons';
 import { Chip } from '../ui/bits';
@@ -55,7 +55,7 @@ export default function Wizard({ step: s0 }: { step: number }) {
               <div class="pgrid">
                 {photos.map((p, i) => (
                   <div class={'ph' + (i === cover ? ' cover' : '')} key={p}>
-                    <img src={photoSvg(p, i, 320, 240)} alt={t('ph', { n: i + 1 })} width={320} height={240} />
+                    <img src={photo(p, i)} alt={t('ph', { n: i + 1 })} width={320} height={240} />
                     {i === cover && <span class="tag">{t('w.cover')}</span>}
                     <div class="pact">
                       <button class="icon round sm" aria-label="←" disabled={i === 0} onClick={() => move(i, -1)}><Icon n="left" size={16} /></button>

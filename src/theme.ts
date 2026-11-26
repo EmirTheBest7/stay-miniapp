@@ -24,7 +24,7 @@ export function themeVars(params: ThemeParams, scheme: 'light' | 'dark'): Record
     '--tg-link': p('link_color'),
     '--tg-button': p('button_color'),
     // our own single accent (teal), independent of Telegram's blue/violet; text on it is always readable
-    '--accent': scheme === 'dark' ? '#3cc4ae' : '#0e8a7b',
+    '--accent': scheme === 'dark' ? '#3cc4ae' : '#0c7467',
     '--on-accent': scheme === 'dark' ? '#06231e' : '#ffffff',
     '--tg-button-text': p('button_text_color'),
     '--tg-secondary-bg': secondary,

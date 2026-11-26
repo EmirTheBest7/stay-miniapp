@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import { lazy, Suspense } from 'preact/compat';
-import { C, type Ctx, type Route, type Sheet as SheetT } from './ctx';
+import { C, type Ctx, type Route, type Sheet as SheetT, type Wishlist } from './ctx';
 import { fromTelegram, type Lang } from './i18n';
 import { EMPTY_FILTERS, type Filters } from './data/types';
 import { bindBack, inTelegram, parseStart, startParam, webApp } from './tg';
+import { loadLists, persist } from './wishlists';
 import { Home } from './screens/Home';
 import { Detail } from './screens/Detail';
-import { Favs, Messages, Profile } from './screens/Lists';
+import { Favs, Messages, Profile, WishlistPage } from './screens/Lists';
 import { FiltersSheet } from './screens/Filters';
-import { Gallery, Report } from './screens/Overlays';
+import { Gallery, Report, SaveSheet } from './screens/Overlays';
 import { TabBar, Toast, Skeleton } from './ui/bits';
 
 const Wizard = lazy(() => import('./screens/Wizard'));
+const Search = lazy(() => import('./screens/Search'));
 
 const qs = new URLSearchParams(location.search);
 const initialLang = (): Lang => {
@@ -28,29 +30,45 @@ export function App() {
     const open = parseStart(startParam() ?? qs.get('start')).listing;
     const q = Number(qs.get('open'));
     const w = Number(qs.get('wizard'));
-    return open ? [{ t: 'detail', id: open }] : q ? [{ t: 'detail', id: q }] : w ? [{ t: 'wizard', step: w }] : [];
+    const s = Number(qs.get('search'));
+    const l = qs.get('list');
+    return open ? [{ t: 'detail', id: open }] : q ? [{ t: 'detail', id: q }] : w ? [{ t: 'wizard', step: w }] : s ? [{ t: 'search', step: s }] : l ? [{ t: 'list', id: l }] : [];
   });
-  const [favs, setFavs] = useState<number[]>(() => (qs.get('favs') ?? '').split(',').filter(Boolean).map(Number));
+  const [lists, setLists] = useState<Wishlist[]>(() => (qs.get('seed') === '1' ? seedLists() : loadLists((qs.get('favs') ?? '').split(',').filter(Boolean).map(Number))));
   const [filters, setFilters] = useState<Filters>({ ...EMPTY_FILTERS });
   const [sheet, setSheet] = useState<SheetT | null>(qs.get('sheet') === 'filters' ? 'filters' : null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [closing, setClosing] = useState(false);
 
-  const setLang = useCallback((l: Lang) => { setLangState(l); try { localStorage.setItem('lang', l); } catch { /* ignore */ } document.documentElement.lang = l; }, []);
+  useEffect(() => { if (qs.get('seed') !== '1') persist(lists); }, [lists]);
+  const setLang = useCallback((l: Lang) => { setLangState(l); try { localStorage.setItem('lang', l); } catch { /* ignore */ } }, []);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   const toast = useCallback((m: string) => { setMsg(m); setTimeout(() => setMsg(null), 1800); }, []);
-  const toggleFav = useCallback((id: number) => setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id])), []);
   const push = useCallback((r: Route) => setStack((s) => [...s, r]), []);
   const open = useCallback((id: number) => push({ t: 'detail', id }), [push]);
 
+  const saved = useCallback((id: number) => lists.some((l) => l.ids.includes(id)), [lists]);
+  const toggleInList = useCallback((listId: string, id: number) => setLists((ls) => {
+    if (!ls.some((l) => l.id === listId)) return [...ls, { id: listId, name: '', ids: [id] }];
+    return ls.map((l) => (l.id === listId ? { ...l, ids: l.ids.includes(id) ? l.ids.filter((x) => x !== id) : [...l.ids, id] } : l));
+  }), []);
+  const createList = useCallback((name: string, id?: number) => setLists((ls) => [...ls, { id: 'l' + Date.now().toString(36), name, ids: id ? [id] : [] }]), []);
+  const deleteList = useCallback((listId: string) => setLists((ls) => ls.filter((l) => l.id !== listId)), []);
+
+  // page exit animation: play it, then pop
   const back = useCallback(() => {
-    if (sheet) setSheet(null);
-    else if (stack.length) setStack((s) => s.slice(0, -1));
+    if (sheet) { setSheet(null); return; }
+    if (!stack.length) return;
+    setClosing(true);
+    setTimeout(() => { setStack((s) => s.slice(0, -1)); setClosing(false); }, 160);
   }, [sheet, stack.length]);
   useEffect(() => bindBack(sheet || stack.length ? back : null), [back, sheet, stack.length]);
   useEffect(() => { if (tab === 'host' && !stack.length) { setStack([{ t: 'wizard', step: 1 }]); setTab('explore'); } }, [tab, stack.length]);
 
-  const ctx: Ctx = useMemo(() => ({ lang, setLang, favs, toggleFav, filters, setFilters, open, toast, push, sheet, setSheet }), [lang, favs, filters, sheet, open, toast, push, setLang, toggleFav]);
+  const ctx: Ctx = useMemo(() => ({ lang, setLang, lists, saved, toggleInList, createList, deleteList, filters, setFilters, open, toast, push, back, sheet, setSheet }), [lang, lists, filters, sheet, open, toast, push, back, setLang, saved, toggleInList, createList, deleteList]);
   const top = stack[stack.length - 1];
+  const favCount = lists.reduce((n, l) => n + l.ids.length, 0);
+  const pageCls = 'page' + (closing ? ' out' : '') + (top?.t === 'detail' ? ' bleed' : '');
   return (
     <C.Provider value={ctx}>
       <div class="app">
@@ -60,18 +78,30 @@ export function App() {
           {tab === 'msgs' && <Messages />}
           {tab === 'me' && <Profile />}
         </main>
-        {!top && <TabBar tab={tab} setTab={setTab} favCount={favs.length} />}
-        {top?.t === 'detail' && <section class="page">{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}<Detail id={top.id} key={top.id} /></section>}
+        {!top && <TabBar tab={tab} setTab={setTab} favCount={favCount} />}
+        {top?.t === 'detail' && <section class={pageCls}><Detail id={top.id} key={top.id} /></section>}
         {top?.t === 'wizard' && (
-          <section class="page">{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}
+          <section class={pageCls}>{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}
             <Suspense fallback={<div class="scroll"><Skeleton /></div>}><Wizard step={top.step} key="wz" /></Suspense>
           </section>
         )}
+        {top?.t === 'search' && (
+          <section class={pageCls}>{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}
+            <Suspense fallback={<div class="scroll"><Skeleton /></div>}><Search step={top.step} onClose={back} key="s" /></Suspense>
+          </section>
+        )}
+        {top?.t === 'list' && <section class={pageCls}>{!inTelegram() && <button class="backbtn" aria-label="‹" onClick={back}>‹</button>}<WishlistPage id={top.id} /></section>}
         {sheet === 'filters' && <FiltersSheet />}
         {typeof sheet === 'object' && sheet && 'report' in sheet && <Report id={sheet.report} />}
         {typeof sheet === 'object' && sheet && 'gallery' in sheet && <Gallery id={sheet.gallery} idx={sheet.idx} />}
+        {typeof sheet === 'object' && sheet && 'save' in sheet && <SaveSheet id={sheet.save} />}
         <Toast msg={msg} />
       </div>
     </C.Provider>
   );
+}
+
+/** ?seed=1: demo wishlists for screenshots (never persisted). */
+function seedLists(): Wishlist[] {
+  return [{ id: 'default', name: '', ids: [3, 14, 22] }, { id: 'l1', name: 'Praha · Vinohrady', ids: [5, 9] }, { id: 'l2', name: 'Brno', ids: [30, 33, 40, 41] }];
 }

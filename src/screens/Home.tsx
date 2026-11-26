@@ -9,6 +9,7 @@ import { Empty, SearchPill, Skeleton } from '../ui/bits';
 import { VList } from '../ui/VList';
 import { Icon } from '../ui/icons';
 import { haptic } from '../tg';
+import { dispoLabel, num } from '../i18n';
 
 const MapView = lazy(() => import('./map'));
 
@@ -16,7 +17,7 @@ const MapView = lazy(() => import('./map'));
 const rowOf = (w: number): number => Math.round((w - 32) * 0.75) + 88 + 24;
 
 export function Home() {
-  const { filters, setFilters, setSheet } = useCtx();
+  const { filters, setFilters, setSheet, push, lang } = useCtx();
   const t = useT();
   const [view, setView] = useState<'list' | 'map'>('list');
   const [loading, setLoading] = useState(true);
@@ -24,6 +25,13 @@ export function Home() {
   const items = useMemo(() => run(LISTINGS, filters), [filters]);
   const kinds: [string, 'all' | 'room' | 'flat' | 'house', string][] = [['chip.all', 'all', 'grid'], ['chip.room', 'room', 'bed'], ['chip.flat', 'flat', 'building'], ['chip.house', 'house', 'home']];
   const n = items.length;
+  const pill = useMemo(() => {
+    const where = [filters.district, filters.city !== 'all' ? t(('city.' + filters.city) as 'city.prague') : null].filter(Boolean).join(', ');
+    const budget = filters.rentMin != null || filters.rentMax != null ? `${filters.rentMin != null ? num(filters.rentMin) : ''}–${filters.rentMax != null ? num(filters.rentMax) : ''} Kč` : '';
+    const rooms = filters.dispo.map((d) => dispoLabel(lang, d)).join(', ');
+    const rest = [budget, rooms].filter(Boolean).join(' · ');
+    return { title: where || t('search.where'), sub: rest || (where ? t('search.sub2') : t('search.sub2')) };
+  }, [filters, lang]);
   const head = (
     <div class="home-head">
       <div class="cats" role="tablist">
@@ -38,26 +46,26 @@ export function Home() {
     </div>
   );
   return (
-    <div class="home">
+    <div class={'home' + (view === 'map' ? ' mapmode' : '')}>
       <div class="top">
-        <SearchPill onClick={() => setSheet('filters')} filtersOn={activeCount(filters)} />
+        <SearchPill onClick={() => { haptic.tap(); push({ t: 'search', step: 1 }); }} onFilters={() => { haptic.tap(); setSheet('filters'); }} filtersOn={activeCount(filters)} title={pill.title} sub={pill.sub} />
       </div>
       {view === 'list' ? (
-        loading ? (
-          <div class="scroll">{head}<Skeleton /><Skeleton /></div>
-        ) : n === 0 ? (
-          <div class="scroll">{head}<Empty icon="search" title={t('e.none')} sub={t('e.none.sub')} action={{ label: t('e.reset'), run: () => setFilters({ ...EMPTY_FILTERS }) }} /></div>
-        ) : (
-          <VList items={items} rowOf={rowOf} head={head} resetKey={JSON.stringify(filters)} render={(l, i) => <Card key={l.id} l={l} eager={i < 2} />} tail={<div style={{ height: '24px' }} />} />
-        )
+        <>
+          {loading ? (
+            <div class="scroll">{head}<Skeleton /><Skeleton /></div>
+          ) : n === 0 ? (
+            <div class="scroll">{head}<Empty icon="search" title={t('e.none')} sub={t('e.none.sub')} action={{ label: t('e.reset'), run: () => setFilters({ ...EMPTY_FILTERS }) }} /></div>
+          ) : (
+            <VList items={items} rowOf={rowOf} head={head} resetKey={JSON.stringify(filters)} render={(l, i) => <Card key={l.id} l={l} eager={i < 2} />} tail={<div style={{ height: '88px' }} />} />
+          )}
+          <button class="fab" onClick={() => { haptic.tap(); setView('map'); }}><Icon n="map" size={18} />{t('v.map')}</button>
+        </>
       ) : (
         <Suspense fallback={<div class="scroll"><Skeleton /></div>}>
-          <MapView items={items} />
+          <MapView items={items} onToggle={() => { haptic.tap(); setView('list'); }} />
         </Suspense>
       )}
-      <button class="fab" onClick={() => { haptic.tap(); setView(view === 'list' ? 'map' : 'list'); }}>
-        <Icon n={view === 'list' ? 'map' : 'list'} size={18} />{t(view === 'list' ? 'v.map' : 'v.list')}
-      </button>
     </div>
   );
 }

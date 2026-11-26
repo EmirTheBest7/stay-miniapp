@@ -41,6 +41,7 @@ export interface Listing {
 export interface Filters {
   city: CityId | 'all';
   kind: Kind | 'all';
+  district: string | null;
   dispo: string[];
   rentMin: number | null;
   rentMax: number | null;
@@ -56,7 +57,7 @@ export interface Filters {
 }
 
 export const EMPTY_FILTERS: Filters = {
-  city: 'all', kind: 'all', dispo: [], rentMin: null, rentMax: null, areaMin: null, furnished: 'any', pets: false,
+  city: 'all', kind: 'all', district: null, dispo: [], rentMin: null, rentMax: null, areaMin: null, furnished: 'any', pets: false,
   depositMax: null, feesIncluded: false, advertiser: 'all', amenities: [], availableNow: false, sort: 'new',
 };
 

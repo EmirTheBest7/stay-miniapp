@@ -6,14 +6,15 @@ export function Chip({ on, children, onClick }: { on?: boolean; children: Compon
   return <button class={'chip' + (on ? ' on' : '')} aria-pressed={!!on} onClick={onClick}>{children}</button>;
 }
 
-export function SearchPill({ onClick, filtersOn }: { onClick(): void; filtersOn: number }) {
-  const t = useT();
+export function SearchPill({ onClick, onFilters, filtersOn, title, sub }: { onClick(): void; onFilters(): void; filtersOn: number; title: string; sub: string }) {
   return (
-    <button class="pill" onClick={onClick}>
-      <Icon n="search" size={20} />
-      <span><b>{t('search.where')}</b><small>{t('search.sub')}</small></span>
-      <i class="fbtn" aria-hidden="true"><Icon n="filter" size={18} />{filtersOn > 0 && <em>{filtersOn}</em>}</i>
-    </button>
+    <div class="pill" role="search">
+      <button class="pbody" onClick={onClick} aria-label={title}>
+        <Icon n="search" size={20} />
+        <span><b>{title}</b><small>{sub}</small></span>
+      </button>
+      <button class="fbtn" onClick={onFilters} aria-label="filters"><Icon n="filter" size={18} />{filtersOn > 0 && <em>{filtersOn}</em>}</button>
+    </div>
   );
 }
 
