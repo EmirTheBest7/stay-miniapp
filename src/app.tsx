@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import { lazy, Suspense } from 'preact/compat';
 import { C, type Ctx, type Route, type Sheet as SheetT, type Wishlist } from './ctx';
-import { fromTelegram, type Lang } from './i18n';
+import { fromTelegram, tr, type Lang } from './i18n';
 import { EMPTY_FILTERS, type Filters } from './data/types';
 import { bindBack, inTelegram, parseStart, startParam, webApp } from './tg';
 import { live, read } from './api';
@@ -135,6 +135,7 @@ export function App() {
         {typeof sheet === 'object' && sheet && 'report' in sheet && <Report id={sheet.report} />}
         {typeof sheet === 'object' && sheet && 'gallery' in sheet && <Gallery id={sheet.gallery} idx={sheet.idx} />}
         {typeof sheet === 'object' && sheet && 'save' in sheet && <SaveSheet id={sheet.save} />}
+        {!live() && inTelegram() && <div class="demo-banner" role="status">{tr(lang, 'demo.banner')}</div>}
         <Toast msg={msg} />
       </div>
     </C.Provider>

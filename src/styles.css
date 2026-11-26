@@ -356,3 +356,5 @@ textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 0; back
 .srow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; } .srow > span:first-child { display: flex; flex-direction: column; }
 .sact { display: inline-flex; gap: 8px; align-items: center; } .sact .btn { min-height: 36px; font-size: 14px; padding: 0 12px; }
 .wz-body .fld input, .wz-body input[type='date'] { background: var(--tg-section-bg); }
+
+.demo-banner { position: absolute; left: 0; right: 0; top: var(--safe-top); z-index: 60; text-align: center; padding: 4px 12px; font-size: 12px; background: var(--tg-destructive); color: var(--tg-button-text); }

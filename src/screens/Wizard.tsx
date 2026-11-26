@@ -10,6 +10,7 @@ import { errText } from '../err';
 import { dispoLabel, num, type Key } from '../i18n';
 import { PhotoError, preparePhoto } from '../photo';
 import { bindMain, bindSecondary, haptic, inTelegram } from '../tg';
+import { ensureWriteAccess } from '../access';
 import { Chip } from '../ui/bits';
 import { Icon } from '../ui/icons';
 
@@ -64,13 +65,14 @@ export default function Wizard({ step: s0, id: id0 }: { step: number; id?: numbe
   const [done, setDone] = useState(false);
   const [missing, setMissing] = useState<string[]>([]);
   const file = useRef<HTMLInputElement>(null);
+  const snap = useRef<string | null>(null);        // the draft as last saved: an unchanged live listing must not be pulled back to review
   const set = (p: Partial<Draft>): void => setD((x) => ({ ...x, ...p }));
 
   // resume an existing draft / edit a listing
   useEffect(() => {
     void read<{ host?: { type: 'private' | 'agency'; ico: string | null; business_name: string | null } }>('listings/mine').then((r) => { if (r.host) setHost({ type: r.host.type, ico: r.host.ico ?? '', biz: r.host.business_name ?? '' }); }).catch(() => {});
     if (!id0) return;
-    void read<Own>('listing/mine.get', { id: id0 }).then((o) => { setOwn({ id: o.id, rev: o.rev }); setD(fromOwn(o, lang)); setPhotos(o.photos); }).catch((e) => { toast(errText(t, e)); back(); });
+    void read<Own>('listing/mine.get', { id: id0 }).then((o) => { setOwn({ id: o.id, rev: o.rev }); const dd = fromOwn(o, lang); setD(dd); snap.current = JSON.stringify(dd); setPhotos(o.photos); }).catch((e) => { toast(errText(t, e)); back(); });
   }, []);
 
   const errs = useMemo(() => problems(d, step, photos.length, host), [d, step, photos.length, host]);
@@ -78,6 +80,7 @@ export default function Wizard({ step: s0, id: id0 }: { step: number; id?: numbe
 
   /** Autosave: the whole draft goes to the server on every "Next" (the server keeps rev; a stale rev is retried once with the fresh one). */
   const save = async (): Promise<{ id: number; rev: number }> => {
+    if (own && snap.current === JSON.stringify(d)) return own;
     const body: Record<string, unknown> = {
       kind: d.kind, city: d.city, district: d.district, dispo: d.kind === 'room' ? 'room' : d.kind === 'house' ? 'house' : d.dispo,
       fees_included: d.feesIncluded, furnished: d.furnished, pets: d.pets, smoking: d.smoking, energy: d.energy, amenities: d.amenities, src_lang: lang,
@@ -90,7 +93,7 @@ export default function Wizard({ step: s0, id: id0 }: { step: number; id?: numbe
     if (pos) { body.lat = pos[0]; body.lng = pos[1]; }
     if (d.desc.trim()) body.desc = { [lang]: d.desc.trim() };
     const o = await write<Own>('listing/save', own ? { ...body, id: own.id } : body);
-    setOwn({ id: o.id, rev: o.rev });
+    setOwn({ id: o.id, rev: o.rev }); snap.current = JSON.stringify(d);
     return { id: o.id, rev: o.rev };
   };
 
@@ -100,7 +103,7 @@ export default function Wizard({ step: s0, id: id0 }: { step: number; id?: numbe
     try {
       if (step === 1) await write('host/profile', host.type === 'agency' ? { type: 'agency', ico: host.ico.trim(), business_name: host.biz.trim() } : { type: 'private' });
       if (step < 7) { await save(); haptic.tap(); setStep(step + 1); }
-      else if (step === 7) { const o = await save(); const r = await write<{ status: string }>('listing/submit', { id: o.id }).catch((e) => e); if (r instanceof ApiErr) { handleSubmitError(r); } else { haptic.success(); setDone(true); bumpMine(); void loadListings(); } }
+      else if (step === 7) { const o = await save(); const r = await write<{ status: string }>('listing/submit', { id: o.id }).catch((e) => e); if (r instanceof ApiErr) { handleSubmitError(r); } else { haptic.success(); setDone(true); bumpMine(); void loadListings(); void ensureWriteAccess(); } }
     } catch (e) { haptic.error(); toast(errText(t, e)); }
     setBusy(false);
   };

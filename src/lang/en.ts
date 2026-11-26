@@ -314,4 +314,5 @@ export default {
   "wz.e.avail": "Enter the date",
   "wz.e.photos": "Add at least one photo",
   "wz.e.desc": "Description: at least 20 characters",
+  "demo.banner": "Preview mode: nothing is sent, data is made up",
 } as const;

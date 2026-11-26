@@ -314,4 +314,5 @@ export default {
   "wz.e.avail": "Uveďte datum",
   "wz.e.photos": "Přidejte alespoň jednu fotku",
   "wz.e.desc": "Popis: alespoň 20 znaků",
+  "demo.banner": "Ukázkový režim: nic se neodesílá, data jsou smyšlená",
 } as const;

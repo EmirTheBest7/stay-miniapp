@@ -4,17 +4,14 @@ import { useCtx, useT } from '../ctx';
 import { toWire } from '../data/convert';
 import type { SavedSearch } from '../data/types';
 import { errText } from '../err';
-import { confirmNative, haptic, requestWriteAccess } from '../tg';
+import { confirmNative, haptic } from '../tg';
+import { ensureWriteAccess } from '../access';
 import { Sheet } from '../ui/Sheet';
 import { Empty } from '../ui/bits';
 import { Icon } from '../ui/icons';
 import { dispoLabel, num } from '../i18n';
 import { activeCount } from '../data/filter';
 
-/** Telegram only lets the bot write first after the person allowed it: ask (native dialog), then tell the server. */
-async function ensureWriteAccess(): Promise<void> {
-  if (await requestWriteAccess()) await write('me/write_access', {});
-}
 
 /** "Message the host" sheet: a first message (templates to start from). The host is told by the bot; replies arrive in Messages. */
 export function ContactSheet({ id }: { id: number }) {

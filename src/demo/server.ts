@@ -1,6 +1,7 @@
 // Demo adapter: the same routes as the PHP API, answered in memory. It is used outside Telegram (the browser prototype, screenshots, ?fake=)
 // and whenever no API base is configured. Nothing leaves the device and nothing is persisted. Synthetic data only.
 import { ApiErr } from '../api';
+import { inTelegram } from '../tg';
 import { LISTINGS } from '../data/mock';
 import { addDemoListing } from '../data/store';
 import type { Own, SavedSearch, ThreadItem } from '../data/types';
@@ -67,7 +68,7 @@ function handle(route: string, d: Record<string, any>): any {
       if (Object.keys(miss).length) throw new ApiErr(422, 'incomplete', JSON.stringify(miss));
       o.status = 'in_review'; bump(o);
       // the demo "moderator" approves after a few seconds so the whole flow can be seen
-      setTimeout(() => { if (o.status === 'in_review') { o.status = 'live'; o.expires_at = now() + 30 * 86400; bump(o); toListing(o); } }, 4000);
+      if (!inTelegram()) setTimeout(() => { if (o.status === 'in_review') { o.status = 'live'; o.expires_at = now() + 30 * 86400; bump(o); toListing(o); } }, 4000);
       return { case_id: 1, status: 'in_review' };
     }
     case 'listing/pause': { const o = find(d.id); o.status = 'paused'; bump(o); return { id: o.id, status: o.status, rev: o.rev }; }
@@ -90,7 +91,7 @@ function handle(route: string, d: Record<string, any>): any {
       }
       t.messages!.push({ mine: true, text: d.text, at: now() }); t.last = { mine: true, text: d.text, at: now() };
       const tt = t;
-      setTimeout(() => { tt.messages!.push({ mine: false, text: 'Dobrý den, děkuji za zprávu. Prohlídka je možná tento týden.', at: now() }); tt.unread++; tt.last = { mine: false, text: 'Dobrý den, děkuji za zprávu. Prohlídka je možná tento týden.', at: now() }; }, 1800);
+      if (!inTelegram()) setTimeout(() => { tt.messages!.push({ mine: false, text: 'Dobrý den, děkuji za zprávu. Prohlídka je možná tento týden.', at: now() }); tt.unread++; tt.last = { mine: false, text: 'Dobrý den, děkuji za zprávu. Prohlídka je možná tento týden.', at: now() }; }, 1800);
       return { thread_id: t.id, needs_write_access: false };
     }
     case 'threads/inbox': return { items: threads.map((t) => ({ ...t, messages: undefined })), unread: threads.reduce((n, t) => n + t.unread, 0) };

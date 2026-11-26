@@ -23,9 +23,9 @@ export async function loadListings(): Promise<void> {
   try {
     const out: Listing[] = [];
     for (let p = 0; p < MAX_PAGES; p++) {
-      const r = await read<{ items: PublicListing[]; total: number }>('public/search', { ...toWire(EMPTY_FILTERS), offset: p * PAGE });
+      const r = await read<{ items: PublicListing[]; total: number }>('public/search', { ...toWire(EMPTY_FILTERS), limit: PAGE, offset: p * PAGE });
       out.push(...r.items.map((i) => fromPublic(i)));
-      if (r.items.length < PAGE) break;
+      if (r.items.length === 0 || out.length >= r.total) break;
     }
     LISTINGS.splice(0, LISTINGS.length, ...out);
     state.error = false;
