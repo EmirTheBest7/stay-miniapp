@@ -1,6 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useCtx, useT } from '../ctx';
 import { Icon } from './icons';
+import { haptic } from '../tg';
 
 export function Chip({ on, children, onClick }: { on?: boolean; children: ComponentChildren; onClick(): void }) {
   return <button class={'chip' + (on ? ' on' : '')} aria-pressed={!!on} onClick={onClick}>{children}</button>;
@@ -41,7 +42,7 @@ export function TabBar({ tab, setTab, favCount }: { tab: string; setTab(t: strin
   return (
     <nav class="tabs">
       {items.map(([id, ic, key]) => (
-        <button key={id} class={tab === id ? 'on' : ''} onClick={() => setTab(id)} aria-current={tab === id ? 'page' : undefined}>
+        <button key={id} class={tab === id ? 'on' : ''} onClick={() => { haptic.select(); setTab(id); }} aria-current={tab === id ? 'page' : undefined}>
           <span class="ti"><Icon n={ic} size={24} />{id === 'favs' && favCount > 0 && <em>{favCount}</em>}</span>
           <span>{t(key as 'tab.explore')}</span>
         </button>

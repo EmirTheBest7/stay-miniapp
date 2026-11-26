@@ -10,7 +10,7 @@
   --tg-button: Highlight; --tg-button-text: HighlightText; --tg-accent: Highlight; --tg-link: LinkText; --tg-destructive: LinkText;
   --tg-section-header: GrayText; --tg-bottom-bar: Canvas; --tg-subtitle: GrayText; --tg-header: Canvas;
   --safe-top: 0px; --safe-bottom: 0px; --safe-left: 0px; --safe-right: 0px;
-  --tab-h: 52px;
+  --bar: 62px; --bar-gap: 10px; --tab-h: calc(var(--bar) + var(--bar-gap) * 2);
   /* prototype basemap, derived from the theme (production tiles come from Mapy.com) */
   --map-land: color-mix(in srgb, var(--tg-secondary-bg) 94%, var(--tg-text));
   --map-water: color-mix(in srgb, var(--tg-button) 22%, var(--tg-secondary-bg));
@@ -116,14 +116,19 @@ main.under { visibility: hidden; }
 
 /* ---- floating Map/List pill (dark translucent, like Telegram's floating controls) ---- */
 .fab { position: absolute; left: 50%; transform: translateX(-50%); z-index: 6; display: inline-flex; gap: 8px; align-items: center; padding: 11px 18px; border-radius: var(--r-pill); background: var(--overlay); color: var(--on-overlay); font-weight: 600; font-size: 15px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 2px 10px rgb(0 0 0 / .25); transition: bottom .26s cubic-bezier(.2, .8, .2, 1), opacity .15s, transform .15s; }
-.home > .fab { bottom: 14px; }
+.home > .fab { bottom: calc(var(--tab-h) + var(--safe-bottom) + 4px); }
 .fab.hide { opacity: 0; pointer-events: none; transform: translate(-50%, 12px); }
 
-/* ---- bottom bar (Telegram style) ---- */
-.tabs { display: flex; height: calc(var(--tab-h) + var(--safe-bottom)); padding-bottom: var(--safe-bottom); background: var(--tg-bottom-bar); box-shadow: inset 0 var(--hair) 0 0 var(--tg-separator); }
-.tabs button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10.5px; color: var(--tg-hint); }
-.tabs button.on { color: var(--tg-accent); }
+/* ---- bottom navigation: floating glass capsule (iOS 26 "Liquid Glass" feel, Telegram colours only) ---- */
+.tabs { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--bar-gap) + var(--safe-bottom)); z-index: 15; width: min(calc(100% - 24px), 520px); height: var(--bar); padding: 5px; display: flex; gap: 2px; border-radius: 999px;
+  background: color-mix(in srgb, var(--tg-bottom-bar) 68%, transparent); -webkit-backdrop-filter: blur(24px) saturate(1.8); backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow: 0 8px 28px rgb(0 0 0 / .22), inset 0 0 0 .5px color-mix(in srgb, var(--tg-text) 16%, transparent), inset 0 1px 0 color-mix(in srgb, var(--tg-text) 10%, transparent); }
+.tabs button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 10.5px; font-weight: 500; color: var(--tg-hint); border-radius: 999px; transition: background .2s, color .2s; }
+.tabs button.on { color: var(--tg-accent); background: color-mix(in srgb, var(--tg-button) 16%, transparent); box-shadow: inset 0 0 0 .5px color-mix(in srgb, var(--tg-text) 10%, transparent); }
+.tabs button:active { transform: scale(.97); }
 .ti { position: relative; display: inline-flex; } .ti em { position: absolute; top: -4px; right: -10px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--tg-button); color: var(--tg-button-text); font: 700 10px/16px sans-serif; text-align: center; padding: 0 4px; font-style: normal; }
+/* content scrolls under the glass: reserve room at the end of every list */
+main .scroll::after { content: ''; display: block; height: calc(var(--tab-h) + var(--safe-bottom) + 8px); }
 
 /* ---- buttons / form bits ---- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; border-radius: var(--r-cell); font-weight: 600; font-size: 17px; }
@@ -201,7 +206,7 @@ main.under { visibility: hidden; }
 .pin.on rect { fill: var(--tg-button); } .pin.on text { fill: var(--tg-button-text); }
 .cluster circle { fill: var(--tg-button); stroke: var(--tg-section-bg); stroke-width: 2; } .cluster text { font: 700 13px sans-serif; fill: var(--tg-button-text); }
 .mapv .zoom { position: absolute; right: 12px; z-index: 3; display: flex; flex-direction: column; gap: 8px; }
-.msheet { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; background: var(--tg-bg); border-radius: 14px 14px 0 0; box-shadow: 0 -4px 20px rgb(0 0 0 / .2); z-index: 4; will-change: height; }
+.msheet { position: absolute; left: 8px; right: 8px; bottom: calc(var(--tab-h) + var(--safe-bottom) - var(--bar-gap)); display: flex; flex-direction: column; background: var(--tg-bg); border-radius: 18px; box-shadow: 0 4px 24px rgb(0 0 0 / .22); z-index: 4; will-change: height; }
 .msheet.snapping { transition: height .26s cubic-bezier(.2, .8, .2, 1); }
 .mhead { touch-action: none; cursor: grab; user-select: none; }
 .mgrab { display: grid; place-items: center; padding: 10px 0 6px; } .mgrab i { width: 36px; height: 4px; border-radius: 2px; background: var(--tg-separator); display: block; }
@@ -237,7 +242,7 @@ main.under { visibility: hidden; }
 
 /* ---- misc ---- */
 .empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 56px 24px; } .empty .ico { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: var(--tg-section-bg); color: var(--tg-accent); }
-.toast { position: fixed; left: 50%; bottom: calc(var(--tab-h) + var(--safe-bottom) + 24px); transform: translateX(-50%); background: var(--overlay); color: var(--on-overlay); padding: 10px 16px; border-radius: var(--r-pill); z-index: 90; font-size: 15px; max-width: 86%; animation: fade .15s; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.toast { position: fixed; left: 50%; bottom: calc(var(--tab-h) + var(--safe-bottom) + 12px); transform: translateX(-50%); background: var(--overlay); color: var(--on-overlay); padding: 10px 16px; border-radius: var(--r-pill); z-index: 90; font-size: 15px; max-width: 86%; animation: fade .15s; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .viewer { position: fixed; inset: 0; background: rgb(0 0 0); z-index: 60; display: flex; flex-direction: column; justify-content: center; }
 .vstrip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; } .vstrip img { flex: none; width: 100%; max-height: 80vh; object-fit: contain; scroll-snap-align: center; }
 .vclose { position: absolute; top: calc(var(--safe-top) + 10px); right: 12px; z-index: 2; } .vcount { position: absolute; bottom: calc(var(--safe-bottom) + 20px); left: 0; right: 0; text-align: center; color: var(--on-overlay); font-size: 15px; }
@@ -284,6 +289,7 @@ body.has-main .app { padding-bottom: calc(52px + 34px); } body.has-sec .app { pa
   .page.bleed { padding-top: var(--safe-top); }
   /* map: panel on the right instead of a bottom sheet */
   .msheet { top: 0; left: auto; right: 0; bottom: 0; width: 420px; height: auto !important; border-radius: 0; box-shadow: -4px 0 20px rgb(0 0 0 / .18); }
+  .home.mapmode ~ .tabs { width: min(calc(100% - 480px), 520px); left: calc(50% - 210px); }
   .mhead { cursor: default; } .mgrab { display: none; } .mlist { overflow-y: auto !important; }
   .mapv .fab, .mapv .zoom { right: auto; }
   .mapv .fab { left: calc(50% - 210px); bottom: 24px !important; }

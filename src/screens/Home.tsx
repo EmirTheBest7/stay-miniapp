@@ -79,7 +79,6 @@ export function Home() {
                 <div class="rail-strip">{r.items.map((l) => <RailCard key={l.id} l={l} />)}</div>
               </section>
             ))}
-            <div style={{ height: '88px' }} />
           </div>
           <button class="fab" onClick={() => { haptic.tap(); setView('map'); }}><Icon n="map" size={18} />{t('v.map')}</button>
         </>
@@ -87,7 +86,7 @@ export function Home() {
         <div class="scroll">{count}<Empty icon="search" title={t('e.none')} sub={t('e.none.sub')} action={{ label: t('e.reset'), run: reset }} /></div>
       ) : (
         <>
-          <VList items={items} rowOf={rowOf} colsOf={colsOf} head={count} resetKey={JSON.stringify(filters)} render={(l, i) => <Card key={l.id} l={l} eager={i < 2} />} tail={<div style={{ height: '88px' }} />} />
+          <VList items={items} rowOf={rowOf} colsOf={colsOf} head={count} resetKey={JSON.stringify(filters)} render={(l, i) => <Card key={l.id} l={l} eager={i < 2} />} />
           <button class="fab" onClick={() => { haptic.tap(); setView('map'); }}><Icon n="map" size={18} />{t('v.map')}</button>
         </>
       )}

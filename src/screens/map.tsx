@@ -109,12 +109,12 @@ export default function MapView({ items, onToggle }: { items: Listing[]; onToggl
           </button>
         ))}
       </div>
-      <div class="zoom" style={{ bottom: sheetH + 72 + 'px' }}>
+      <div class="zoom" style={{ bottom: `calc(${sheetH}px + 72px + var(--tab-h) + var(--safe-bottom) - var(--bar-gap))` }}>
         <button class="icon round" aria-label="+" onClick={() => setZoom(Math.min(4, zoom * 1.4))}><Icon n="plus" size={20} /></button>
         <button class="icon round" aria-label="−" onClick={() => setZoom(Math.max(0.6, zoom / 1.4))}><b>−</b></button>
       </div>
       {/* floating Map/List pill: sits just above the sheet, hides while the sheet is fully open, never covers the list */}
-      <button class={'fab' + (snap === 'full' && live === null ? ' hide' : '')} style={{ bottom: sheetH + 14 + 'px' }} onClick={onToggle}><Icon n="list" size={18} />{t('v.list')}</button>
+      <button class={'fab' + (snap === 'full' && live === null ? ' hide' : '')} style={{ bottom: `calc(${sheetH}px + 14px + var(--tab-h) + var(--safe-bottom) - var(--bar-gap))` }} onClick={onToggle}><Icon n="list" size={18} />{t('v.list')}</button>
       <section class={'msheet' + (live === null ? ' snapping' : '')} style={{ height: sheetH + 'px' }} aria-label={t('v.list')}>
         <div class="mhead" onPointerDown={onSheetDown} onPointerMove={onSheetMove} onPointerUp={onSheetUp} onPointerCancel={() => { sh.current = null; setLive(null); }}>
           <span class="mgrab"><i /></span>
