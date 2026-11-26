@@ -9,7 +9,8 @@ const BASE = import.meta.env.BASE_URL;
 
 /** A photo of the listing: deterministic per seed, distinct within one listing (stride 7 is coprime with the 33-photo pool). */
 export function photo(seed: number, idx: number): string {
-  const id = POOL[(seed * 11 + idx * 7) % POOL.length] as number;
+  const start = Math.imul(seed, 2654435761) >>> 0;   // mix the seed: plain multiples of 11 would only reach 3 of the 33 start positions
+  const id = POOL[(start % POOL.length + idx * 7) % POOL.length] as number;
   return `${BASE}demo/p${id}.jpg`;
 }
 

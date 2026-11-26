@@ -52,3 +52,13 @@ describe('synthetic data and filters', () => {
     expect(cells.size).toBeLessThanOrEqual(LISTINGS.length);
   });
 });
+
+import { photo, POOL } from '../src/data/photos';
+describe('demo photos', () => {
+  it('listings use many different photos and never repeat one inside a listing', () => {
+    const first = new Set(LISTINGS.map((l) => photo(l.seed, 0)));
+    expect(first.size).toBeGreaterThan(20);
+    for (const l of LISTINGS) expect(new Set(Array.from({ length: l.photos }, (_, k) => photo(l.seed, k))).size).toBe(l.photos);
+    expect(POOL.length).toBe(33);
+  });
+});
