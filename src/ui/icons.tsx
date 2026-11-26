@@ -20,6 +20,9 @@ const P: Record<string, string> = {
   left: 'M15.500 6 9.500 12l6 6 1.400-1.400L12.300 12l4.600-4.600L15.500 6Z',
   right: 'M8.500 6 7.100 7.400 11.700 12l-4.600 4.600L8.500 18l6-6-6-6Z',
   camera: 'M9 4 7.500 6H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-3.500L15 4H9Zm3 4a4.500 4.500 0 1 1 0 9 4.500 4.500 0 0 1 0-9Z',
+  bed: 'M3 7h2v6h14v-2a3 3 0 0 0-3-3h-5v5H5V7H3Zm0 8h18v4h-2v-2H5v2H3v-4Zm4-5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
+  building: 'M5 3h10v7h4v11H5V3Zm3 3v2h2V6H8Zm0 4v2h2v-2H8Zm0 4v2h2v-2H8Zm7 0v2h2v-2h-2Z',
+  grid: 'M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z',
   trash: 'M6 7h12l-1 14H7L6 7Zm3-4h6l1 2h4v2H4V5h4l1-2Z',
 };
 

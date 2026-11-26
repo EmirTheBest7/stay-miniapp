@@ -5,15 +5,15 @@ import { run, activeCount } from '../data/filter';
 import { EMPTY_FILTERS } from '../data/types';
 import { useCtx, useT } from '../ctx';
 import { Card } from '../ui/Card';
-import { Chip, Empty, SearchPill, Skeleton } from '../ui/bits';
+import { Empty, SearchPill, Skeleton } from '../ui/bits';
 import { VList } from '../ui/VList';
 import { Icon } from '../ui/icons';
 import { haptic } from '../tg';
 
 const MapView = lazy(() => import('./map'));
 
-/** card = 4:3 photo + fixed 108 px meta + 16 px gap, inside 16 px page gutters */
-const rowOf = (w: number): number => Math.round((w - 32) * 0.75) + 108 + 16;
+/** card = 4:3 photo (20 px radius) + fixed 88 px text block + 24 px gap, inside 16 px page gutters */
+const rowOf = (w: number): number => Math.round((w - 32) * 0.75) + 88 + 24;
 
 export function Home() {
   const { filters, setFilters, setSheet } = useCtx();
@@ -22,12 +22,16 @@ export function Home() {
   const [loading, setLoading] = useState(true);
   useEffect(() => { const h = setTimeout(() => setLoading(false), 350); return () => clearTimeout(h); }, []);
   const items = useMemo(() => run(LISTINGS, filters), [filters]);
-  const kinds: [string, 'all' | 'room' | 'flat' | 'house'][] = [['chip.all', 'all'], ['chip.room', 'room'], ['chip.flat', 'flat'], ['chip.house', 'house']];
+  const kinds: [string, 'all' | 'room' | 'flat' | 'house', string][] = [['chip.all', 'all', 'grid'], ['chip.room', 'room', 'bed'], ['chip.flat', 'flat', 'building'], ['chip.house', 'house', 'home']];
   const n = items.length;
   const head = (
     <div class="home-head">
-      <div class="chips">
-        {kinds.map(([k, v]) => <Chip key={v} on={filters.kind === v} onClick={() => { haptic.select(); setFilters({ ...filters, kind: v }); }}>{t(k as 'chip.all')}</Chip>)}
+      <div class="cats" role="tablist">
+        {kinds.map(([k, v, ic]) => (
+          <button key={v} role="tab" aria-selected={filters.kind === v} class={'cat' + (filters.kind === v ? ' on' : '')} onClick={() => { haptic.select(); setFilters({ ...filters, kind: v }); }}>
+            <Icon n={ic} size={26} /><span>{t(k as 'chip.all')}</span>
+          </button>
+        ))}
         {/* "Short stay" stays hidden until short stays are enabled (legal review pending) */}
       </div>
       <div class="count hint">{t(n === 1 ? 'list.count1' : 'list.count', { n })}</div>

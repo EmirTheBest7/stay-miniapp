@@ -29,6 +29,7 @@ export default function MapView({ items }: { items: Listing[] }) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [sel, setSel] = useState<number | null>(null);
+  const [full, setFull] = useState(false);
   const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
   const here = items.filter((l) => l.city === city);
 
@@ -82,13 +83,18 @@ export default function MapView({ items }: { items: Listing[] }) {
         <button class="icon round" aria-label="+" onClick={() => setZoom(Math.min(4, zoom * 1.4))}><Icon n="plus" size={20} /></button>
         <button class="icon round" aria-label="−" onClick={() => setZoom(Math.max(0.6, zoom / 1.4))}><b>−</b></button>
       </div>
-      <div class="attrib">{t('map.approx')} · prototype basemap</div>
-      {selL && (
-        <button class="peek" onClick={() => open(selL.id)}>
-          <img src={photoSvg(selL.seed, 0, 160, 120)} alt="" width={80} height={60} />
-          <span><b>{dispoLabel(lang, selL.dispo)} · {t('d.area', { n: selL.area })}</b><small>{selL.district}</small><b class="pr">{t('kc', { n: num(selL.rent) })}</b></span>
-        </button>
-      )}
+      <section class={'msheet' + (full ? ' full' : '')} aria-label={t('v.list')}>
+        <button class="mgrab" aria-label={t('v.list')} onClick={() => { haptic.tap(); setFull(!full); }}><i /></button>
+        <div class="mcount"><b>{t(here.length === 1 ? 'list.count1' : 'list.count', { n: here.length })}</b> <span class="hint">· {t(('city.' + city) as 'city.prague')}</span></div>
+        <div class="mlist">
+          {(selL ? [selL, ...here.filter((x) => x.id !== selL.id)] : here).map((l) => (
+            <button key={l.id} class={'mrow' + (l.id === sel ? ' on' : '')} onClick={() => open(l.id)}>
+              <img src={photoSvg(l.seed, 0, 160, 120)} alt="" width={96} height={72} loading="lazy" />
+              <span><b>{l.district}</b><small>{dispoLabel(lang, l.dispo)} · {t('d.area', { n: l.area })}</small><b class="pr">{t('kc', { n: num(l.rent) })} <i>{t('d.month')}</i></b></span>
+            </button>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

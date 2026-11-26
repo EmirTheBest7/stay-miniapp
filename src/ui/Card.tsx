@@ -25,12 +25,9 @@ export function Card({ l, eager }: { l: Listing; eager?: boolean }) {
         <AdBadge l={l} />
       </div>
       <div class="meta" onClick={() => open(l.id)}>
-        <div class="row1">
-          <b class="title">{dispoLabel(lang, l.dispo)} · {t('d.area', { n: l.area })}</b>
-          <span class="where">{l.district}</span>
-        </div>
-        <div class="row2 hint">{city}{l.furnished === 'yes' ? ' · ' + t('fur.yes') : ''}{l.pets ? ' · ' + t('d.pets') : ''}</div>
-        <div class="price"><b>{t('kc', { n: num(l.rent) })}</b> <span class="hint">{t('d.month')}{l.feesIncluded ? ' · ' + t('d.feesIn') : l.fees ? ' ' + t('d.fees', { n: num(l.fees) }) : ''}</span></div>
+        <div class="row1"><b class="title">{l.district}, {city}</b></div>
+        <div class="row2 hint">{dispoLabel(lang, l.dispo)} · {t('d.area', { n: l.area })}{l.furnished === 'yes' ? ' · ' + t('fur.yes') : ''}{l.pets ? ' · ' + t('d.pets') : ''}</div>
+        <div class="price"><b>{t('kc', { n: num(l.rent) })}</b> <span>{t('d.month')}</span>{l.feesIncluded ? <span class="hint"> · {t('d.feesIn')}</span> : l.fees ? <span class="hint"> · {t('d.fees', { n: num(l.fees) })}</span> : null}</div>
       </div>
     </article>
   );
